@@ -1148,7 +1148,7 @@ body {
 
 .form-group {
     flex: 1;
-    margin-bottom: 2vw;
+    margin-bottom: 1vw;
 }
 
 .form-group label {
@@ -2349,10 +2349,10 @@ body:not(.modal-open) .container {
 }
 
 #employeeModal .form-group label {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     color: #333;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
 
 #employeeModal .form-group input,
@@ -2517,6 +2517,7 @@ body:not(.modal-open) .container {
     justify-content: center;
     gap: 10px;
 }
+
 
 #employeeModal .submit-btn:hover {
     transform: translateY(-2px);
@@ -3137,10 +3138,10 @@ body:not(.modal-open) .container {
 }
 
 .filename {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 15px;
+   margin-bottom: 8px;
+    color: #333;
     font-weight: 500;
+    font-size: 0.85rem;
 }
 
 .upload-label {
@@ -3327,6 +3328,7 @@ ease;
 .container-client {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 15px;
 }
 
 /* Header Styles */
@@ -3391,7 +3393,7 @@ ease;
 .client-table th,
 .client-table td {
     border: 1px solid #ccc; /* Adds | and - borders */
-    padding: 8px 12px;
+    padding: 8px 5px;
     text-align: left;
 }
 
@@ -3779,6 +3781,12 @@ ease;
     gap: 1rem;
     overflow-y: auto;
 }
+.taskform-grid2{
+        display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    overflow-y: auto;
+    }
 
 .form-grid3 {
     display: grid;
@@ -3812,6 +3820,13 @@ ease;
         grid-template-columns: repeat(3, 1fr);
         width: 100%;
         /* height: 60vh; */
+        overflow-y: auto;
+    }
+    .taskform-grid2{
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%;
+        height: 60vh;
+        overflow-y: auto;
     }
          .form-grid3 {
         grid-template-columns: repeat(3, 1fr);
@@ -4509,6 +4524,7 @@ ease;
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
 }
+
 
 .required {
     color: #ef4444;

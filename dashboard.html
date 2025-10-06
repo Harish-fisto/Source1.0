@@ -332,13 +332,14 @@
                   <thead>
                     <tr>
                       <th>Status</th>
-                      <th>Date</th>
+                      <th>Remarks</th>
+                      <th>Initiated Date</th>
+                      <th>Updated Date</th>
                       <th>Customer ID</th>
                       <th>Company Name</th>
                       <th>Customer Name</th>
                       <th>Phone Number</th>
                       <th>Mail ID</th>
-                      <th>Remarks</th>
                       <th>View</th>
                       <th>Delete</th> <!-- Added Delete column -->
                     </tr>
@@ -497,7 +498,7 @@
               <!-- Task Allocation Form -->
 
               <form id="TaskallocationForm" class="project-form">
-                <div class="form-grid2">
+                <div class="taskform-grid2">
                   <div class="form-group">
                     <label for="TaskProjectName">Project Name <span class="required">*</span></label>
                     <select name="TaskProjectName" id="TaskProjectName">
@@ -1328,7 +1329,7 @@
                     <div class="upload-card" data-type="photo">
                       <i class="fas fa-camera upload-icon"></i>
                       <img class="preview-image" id="preview1" alt="Preview">
-                      <div class="filename" id="filename1">Employee Photo</div>
+                      <div class="filename" id="filename1">Employee Photo*</div>
                       <label for="file1" class="upload-label">
                         <i class="fas fa-upload"></i> Choose Photo
                         <input type="file" id="file1" name="file1" accept="image/*"
@@ -1336,10 +1337,11 @@
                       </label>
                       <button type="button" class="remove-file" onclick="removeFile(1)">×</button>
                     </div>
-
+                    
                     <div class="upload-card" data-type="resume">
                       <i class="fas fa-file-alt upload-icon"></i>
                       <img class="preview-image" id="preview2" alt="Preview">
+                      
                       <div class="filename" id="filename2">Resume/CV</div>
                       <label for="file2" class="upload-label">
                         <i class="fas fa-upload"></i> Choose Resume
@@ -1352,24 +1354,17 @@
                     <div class="upload-card" data-type="id">
                     <i class="fas fa-id-card upload-icon"></i>
                     <img class="preview-image" id="preview3" alt="Preview">
-                    <div class="filename" id="filename3">ID Proof</div>
+                    <div class="form-group">
+                    <label for="selectType">ID Proof <br>Select Type </label>
+                    <input type="text" id="selectType" name="selectType" required
+                      placeholder="Select Type">
+                  </div>
                     <label for="file3" class="upload-label">
                       <i class="fas fa-upload"></i> Choose ID(s)
                       <input type="file" id="file3" name="file3[]" accept="image/*,.pdf" multiple
                         onchange="handleFileChange(event, 3)">
                     </label>
                     <button type="button" class="remove-file" onclick="removeFile(3)">×</button>
-                    <div class="form-group">
-                    <label for="working-status">Select type *</label>
-                    <select id="working-status" name="working-status" required>
-                      <option value="" disabled selected>Select working status</option>
-                      <option value="aadharcard">Aadhar card</option>
-                      <option value="pancard">Pancard</option>
-                      <option value="bank passbook">Bank Passbook</option>
-                      <option value="driving licence">Driving Licence</option>
-                      <option value="degree certificate">Degree Certificate</option>
-                    </select>
-                  </div>
                   </div>
 
 
@@ -1397,26 +1392,6 @@
                     </label>
                     <button type="button" class="remove-file" onclick="removeFile(5)">×</button>
                   </div>
-                  </div>
-                </div>
-
-                <!-- File Preview Section -->
-                <div class="file-preview-section">
-                  <h3>Uploaded Files Preview</h3>
-
-                  <div id="preview-id-proof" class="file-preview-group">
-                    <h4>ID Proof:</h4>
-                    <div class="file-preview-list" id="preview-list-id"></div>
-                  </div>
-
-                  <div id="preview-certificates" class="file-preview-group">
-                    <h4>Certificates:</h4>
-                    <div class="file-preview-list" id="preview-list-certificates"></div>
-                  </div>
-
-                  <div id="preview-other-docs" class="file-preview-group">
-                    <h4>Other Documents:</h4>
-                    <div class="file-preview-list" id="preview-list-other"></div>
                   </div>
                 </div>
 

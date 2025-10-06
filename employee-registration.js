@@ -483,6 +483,214 @@ function handleFileChange(event, index) {
   });
 }
 
+// Handle file uploads - routes to single or multiple file handler
+function handleFileChange(event, fileNum) {
+  const input = event.target;
+  const isMultiple = input.hasAttribute('multiple');
+  
+  if (isMultiple) {
+    handleMultipleFileChange(event, fileNum);
+  } else {
+    handleSingleFileChange(event, fileNum);
+  }
+}
+
+// Handle single file uploads (photo, resume) with enhanced image preview
+function handleSingleFileChange(event, fileNum) {
+  const file = event.target.files[0];
+  const card = event.target.closest('.upload-card');
+  
+  if (!file) return;
+  
+  const fileSize = (file.size / 1024).toFixed(2);
+  const fileExtension = file.name.split('.').pop().toLowerCase();
+  
+  console.log('=== SINGLE FILE UPLOAD DEBUG ===');
+  console.log('File selected:', file.name, 'Type:', file.type, 'Size:', fileSize + 'KB');
+  console.log('Card element:', card);
+  
+  // Find or create preview elements
+  let preview = card.querySelector('.preview-image');
+  let filename = card.querySelector('.filename');
+  let uploadIcon = card.querySelector('.upload-icon');
+  
+  console.log('Preview element:', preview);
+  console.log('Filename element:', filename);
+  console.log('Upload icon element:', uploadIcon);
+  
+  // If preview image doesn't exist, create it
+  if (!preview) {
+    console.log('Creating new preview image element');
+    preview = document.createElement('img');
+    preview.className = 'preview-image';
+    preview.style.display = 'none';
+    card.appendChild(preview);
+  }
+  
+  // Update filename with size
+  if (filename) {
+    filename.textContent = `${file.name} (${fileSize} KB)`;
+    filename.style.fontSize = '12px';
+    filename.style.color = '#374151';
+  }
+  
+  // Check if it's an image
+  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(fileExtension) || 
+                  file.type.startsWith('image/');
+  
+  console.log('Is image?', isImage);
+  
+  if (isImage) {
+    console.log('Processing image preview...');
+    
+    // Show loading state
+    if (uploadIcon) {
+      uploadIcon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+    
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      console.log('FileReader loaded successfully');
+      console.log('Data URL length:', e.target.result.length);
+      
+      const img = new Image();
+      
+      img.onload = function() {
+        console.log('✓ Image loaded successfully:', img.width, 'x', img.height);
+        
+        // Set image source
+        preview.src = e.target.result;
+        
+        // Style the preview image
+        preview.style.display = 'block';
+        preview.style.width = '100%';
+        preview.style.height = 'auto';
+        preview.style.maxHeight = '150px';
+        preview.style.objectFit = 'contain';
+        preview.style.borderRadius = '8px';
+        preview.style.border = '2px solid #e5e7eb';
+        preview.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        preview.style.marginTop = '25px';
+        preview.style.marginLeft = '15px';
+        
+        console.log('Preview src set:', preview.src.substring(0, 50) + '...');
+        console.log('Preview display:', preview.style.display);
+        
+        // Hide upload icon
+        if (uploadIcon) {
+          uploadIcon.style.display = 'none';
+        }
+        
+        // Remove any existing success badge
+        const existingBadge = card.querySelector('.success-badge');
+        if (existingBadge) {
+          existingBadge.remove();
+        }
+        
+        // Add success indicator
+        // const successBadge = document.createElement('div');
+        // successBadge.className = 'success-badge';
+        // successBadge.innerHTML = '<i class="fas fa-check-circle"></i> Ready';
+        // successBadge.style.cssText = `
+        //   position: absolute;
+        //   top: 10px;
+        //   right: 10px;
+        //   background: rgba(16, 185, 129, 0.9);
+        //   color: white;
+        //   padding: 4px 8px;
+        //   border-radius: 4px;
+        //   font-size: 11px;
+        //   font-weight: 600;
+        //   z-index: 1;
+        // `;
+        // card.style.position = 'relative';
+        // card.appendChild(successBadge);
+        
+        // console.log('✓ Image preview complete');
+      };
+      
+      img.onerror = function() {
+        console.error('✗ Image failed to load');
+        preview.style.display = 'none';
+        if (uploadIcon) {
+          uploadIcon.style.display = 'block';
+          uploadIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>';
+        }
+        if (filename) {
+          filename.textContent = file.name + ' (Failed to load)';
+          filename.style.color = '#ef4444';
+        }
+      };
+      
+      img.src = e.target.result;
+    };
+    
+    reader.onerror = function(error) {
+      console.error('✗ FileReader error:', error);
+      preview.style.display = 'none';
+      if (uploadIcon) {
+        uploadIcon.style.display = 'block';
+        uploadIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>';
+      }
+      if (filename) {
+        filename.textContent = 'Error reading file';
+        filename.style.color = '#ef4444';
+      }
+    };
+    
+    reader.readAsDataURL(file);
+    
+  } else {
+    // For non-image files (PDF, DOC, etc.)
+    console.log('Processing non-image file');
+    preview.style.display = 'none';
+    
+    const iconMap = {
+      'pdf': 'fa-file-pdf',
+      'doc': 'fa-file-word',
+      'docx': 'fa-file-word',
+      'xls': 'fa-file-excel',
+      'xlsx': 'fa-file-excel',
+      'txt': 'fa-file-alt'
+    };
+    
+    const icon = iconMap[fileExtension] || 'fa-file';
+    
+    if (uploadIcon) {
+      uploadIcon.style.display = 'block';
+      uploadIcon.innerHTML = `<i class="fas ${icon}" style="font-size: 48px; color: #4f46e5;"></i>`;
+    }
+    
+    // Remove any existing success badge
+    const existingBadge = card.querySelector('.success-badge');
+    if (existingBadge) {
+      existingBadge.remove();
+    }
+    
+    // Add success indicator
+    // const successBadge = document.createElement('div');
+    // successBadge.className = 'success-badge';
+    // successBadge.innerHTML = '<i class="fas fa-check-circle"></i> Ready';
+    // successBadge.style.cssText = `
+    //   position: absolute;
+    //   top: 10px;
+    //   right: 10px;
+    //   background: rgba(16, 185, 129, 0.9);
+    //   color: white;
+    //   padding: 4px 8px;
+    //   border-radius: 4px;
+    //   font-size: 11px;
+    //   font-weight: 600;
+    //   z-index: 1;
+    // `;
+    // card.style.position = 'relative';
+    // card.appendChild(successBadge);
+  }
+  
+  card.classList.add('has-file');
+  console.log('=== FILE UPLOAD DEBUG END ===');
+}
 
 // Reset form
 function resetForm() {
@@ -506,18 +714,14 @@ document.addEventListener('keydown', function (event) {
     }
 });
 
-// Preview function for multiple files
+// Preview functions for view/edit modal
 function previewMultipleFiles(input, fileType, previewElementId) {
     const previewElement = document.getElementById(previewElementId);
     
     if (!input.files || input.files.length === 0) {
-        if (previewElement) {
-            previewElement.innerHTML = '';
-        }
+        if (previewElement) previewElement.innerHTML = '';
         return;
     }
-    
-    console.log(`Previewing ${input.files.length} file(s) for ${fileType}`);
     
     if (previewElement) {
         previewElement.innerHTML = '';
@@ -539,7 +743,6 @@ function previewMultipleFiles(input, fileType, previewElementId) {
         }
     }
     
-    // Update status indicator
     const statusMap = {
         'id_proof': 'currentIdProof',
         'certificates': 'currentCertificates',
@@ -555,14 +758,10 @@ function previewMultipleFiles(input, fileType, previewElementId) {
 
 // Enhanced preview function for single files (photo/resume)
 function previewUpdateFile(input, fileType, previewElementId) {
-    const previewArea = document.getElementById('filePreviewArea');
-    const previewList = document.getElementById('filePreviewList');
     const previewElement = previewElementId ? document.getElementById(previewElementId) : null;
     
     if (!input.files || input.files.length === 0) {
-        if (previewElement) {
-            previewElement.innerHTML = '';
-        }
+        if (previewElement) previewElement.innerHTML = '';
         return;
     }
     
@@ -570,27 +769,6 @@ function previewUpdateFile(input, fileType, previewElementId) {
     const fileSize = (file.size / 1024).toFixed(2);
     const fileName = file.name;
     const fileExtension = fileName.split('.').pop().toLowerCase();
-    
-    console.log('File selected:', fileName, 'Type:', file.type, 'Size:', fileSize + 'KB');
-    
-    if (previewArea) {
-        previewArea.style.display = 'block';
-    }
-    
-    if (previewList) {
-        const fileInfo = document.createElement('div');
-        fileInfo.style.cssText = 'padding: 5px 0; border-bottom: 1px solid #e5e7eb;';
-        fileInfo.innerHTML = `
-            <i class="fas fa-file" style="color: #10b981; margin-right: 8px;"></i>
-            <strong>${fileType}:</strong> ${fileName} (${fileSize} KB)
-        `;
-        
-        const existingPreviews = previewList.querySelectorAll(`[data-file-type="${fileType}"]`);
-        existingPreviews.forEach(p => p.remove());
-        
-        fileInfo.setAttribute('data-file-type', fileType);
-        previewList.appendChild(fileInfo);
-    }
     
     const statusMap = {
         'photo': 'currentPhoto',
@@ -611,8 +789,6 @@ function previewUpdateFile(input, fileType, previewElementId) {
                         file.type.startsWith('image/');
         
         if (isImage) {
-            console.log('Processing image preview...');
-            
             previewElement.innerHTML = `
                 <div style="text-align: center; padding: 10px;">
                     <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #4f46e5;"></i>
@@ -623,13 +799,9 @@ function previewUpdateFile(input, fileType, previewElementId) {
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                console.log('FileReader loaded successfully');
-                
                 const img = new Image();
                 
                 img.onload = function() {
-                    console.log('Image loaded successfully:', img.width, 'x', img.height);
-                    
                     previewElement.innerHTML = `
                         <div style="position: relative; max-width: 150px; margin: 0 auto;">
                             <img src="${e.target.result}" 
@@ -638,35 +810,20 @@ function previewUpdateFile(input, fileType, previewElementId) {
                             <div style="position: absolute; top: 5px; right: 5px; background: rgba(16, 185, 129, 0.9); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">
                                 NEW
                             </div>
-                            <button type="button" onclick="document.getElementById('${input.id}').value=''; document.getElementById('${previewElementId}').innerHTML=''; ${statusElement ? `document.getElementById('${statusMap[fileType]}').innerHTML='<i class=\\'fas fa-times-circle\\' style=\\'color: #ef4444;\\'></i> Not uploaded'` : ''}" 
-                                    style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #ef4444; color: white; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); padding: 0;">
-                                <i class="fas fa-times"></i>
-                            </button>
                         </div>
                     `;
                 };
                 
                 img.onerror = function() {
-                    console.error('Image failed to load');
                     previewElement.innerHTML = `
                         <div style="text-align: center; padding: 10px; background: #fee2e2; border-radius: 8px;">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #ef4444; margin-bottom: 5px;"></i>
+                            <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #ef4444;"></i>
                             <div style="font-size: 11px; color: #991b1b;">Failed to load image</div>
                         </div>
                     `;
                 };
                 
                 img.src = e.target.result;
-            };
-            
-            reader.onerror = function(error) {
-                console.error('FileReader error:', error);
-                previewElement.innerHTML = `
-                    <div style="text-align: center; padding: 10px; background: #fee2e2; border-radius: 8px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #ef4444; margin-bottom: 5px;"></i>
-                        <div style="font-size: 11px; color: #991b1b;">Error reading file</div>
-                    </div>
-                `;
             };
             
             reader.readAsDataURL(file);
@@ -684,24 +841,18 @@ function previewUpdateFile(input, fileType, previewElementId) {
             const icon = iconMap[fileExtension] || 'fa-file';
             
             previewElement.innerHTML = `
-                <div style="position: relative; text-align: center; padding: 10px; background: #f3f4f6; border-radius: 8px;">
+                <div style="text-align: center; padding: 10px; background: #f3f4f6; border-radius: 8px;">
                     <i class="fas ${icon}" style="font-size: 32px; color: #4f46e5; margin-bottom: 5px;"></i>
-                    <div style="font-size: 11px; color: #6b7280; word-break: break-word; max-width: 150px; margin: 0 auto;">
+                    <div style="font-size: 11px; color: #6b7280; word-break: break-word;">
                         ${fileName}
                     </div>
                     <div style="font-size: 10px; color: #10b981; font-weight: 600; margin-top: 3px;">
                         Ready to upload
                     </div>
-                    <button type="button" onclick="document.getElementById('${input.id}').value=''; document.getElementById('${previewElementId}').innerHTML=''; ${statusElement ? `document.getElementById('${statusMap[fileType]}').innerHTML='<i class=\\'fas fa-times-circle\\' style=\\'color: #ef4444;\\'></i> Not uploaded'` : ''}" 
-                            style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; background: #ef4444; color: white; border: 2px solid white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); padding: 0;">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
             `;
         }
     }
-    
-    console.log(`File preview complete for ${fileType}`);
 }
 
 // Keep the rest of your original JavaScript code below this line (ImprovedEmployeeManager class and other functions)

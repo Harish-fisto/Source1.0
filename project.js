@@ -390,6 +390,196 @@ class ProjectManager {
     }
 }
 
+function populateProjectClientList() {
+    const tbody = document.getElementById('clientListTableBody');
+    
+    // Check if clientManager exists and has clients data
+    if (typeof clientManager !== 'undefined' && clientManager.clients && clientManager.clients.length > 0) {
+        tbody.innerHTML = clientManager.clients.map((client, index) => `
+            <tr>
+                <td>
+                    <span class="status-badge status-${(client.status || 'none').toLowerCase().replace(/\s+/g, '')}">
+                        ${client.status || 'None'}
+                    </span>
+                </td>
+                <td>${client.remarks || 'N/A'}</td>
+                <td>${formatDate(client.Date)}</td>
+                <td>${formatDate(client.updatedAt)}</td>
+                <td>${client.customerId}</td>
+                <td>${client.companyName}</td>
+                <td>${client.customerName}</td>
+                <td>${client.phoneNo}</td>
+                <td>${client.mailId}</td>
+                <td>
+                    <button class="view-btn" onclick="viewClientFromProject(${index})" style="
+                        background: #17a2b8;
+                        color: white;
+                        border: none;
+                        padding: 8px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 12px;
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } else {
+        tbody.innerHTML = `
+            <tr class="empty-state">
+                <td colspan="10">
+                    <div class="empty-content">
+                        <i class="fas fa-users"></i>
+                        <p>No clients found</p>
+                        <small>No client data available</small>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Function to view client details from project page (read-only)
+function viewClientFromProject(index) {
+    if (typeof clientManager !== 'undefined' && clientManager.clients[index]) {
+        const client = clientManager.clients[index];
+        const clientviewContent = document.getElementById('clientviewContent');
+
+        clientviewContent.innerHTML = `
+            <div class="view-details" style="padding: 20px;">
+                <h3 style="margin-bottom: 20px; color: #333;">Client Details</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px;">
+                    <div>
+                        <strong style="color: #666;">Date:</strong>
+                        <p style="margin: 5px 0;">${formatDate(client.Date)}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Customer ID:</strong>
+                        <p style="margin: 5px 0;">${client.customerId || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Company Name:</strong>
+                        <p style="margin: 5px 0;">${client.companyName || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Customer Name:</strong>
+                        <p style="margin: 5px 0;">${client.customerName || 'N/A'}</p>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <strong style="color: #666;">Address:</strong>
+                        <p style="margin: 5px 0;">${client.address || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Industry Type:</strong>
+                        <p style="margin: 5px 0;">${client.industryType || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Website:</strong>
+                        <p style="margin: 5px 0;">${client.website || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Reference:</strong>
+                        <p style="margin: 5px 0;">${client.reference || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Status:</strong>
+                        <p style="margin: 5px 0;">
+                            <span class="status-badge status-${(client.status || 'none').toLowerCase().replace(/\s+/g, '')}">
+                                ${client.status || 'None'}
+                            </span>
+                        </p>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <strong style="color: #666;">Remarks:</strong>
+                        <p style="margin: 5px 0;">${client.remarks || 'N/A'}</p>
+                    </div>
+                </div>
+
+                <h3 style="margin: 30px 0 20px 0; color: #333;">Contact Details</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div>
+                        <strong style="color: #666;">Contact Person:</strong>
+                        <p style="margin: 5px 0;">${client.contactPerson || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Phone Number:</strong>
+                        <p style="margin: 5px 0;">${client.phoneNo || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Mail ID:</strong>
+                        <p style="margin: 5px 0;">${client.mailId || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <strong style="color: #666;">Designation:</strong>
+                        <p style="margin: 5px 0;">${client.designation || 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('clientviewModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+// Helper function to format dates
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// Modify the existing switchTab function to handle the new client list tab
+// Add this to your existing switchTab function in project.js or dashboard.js
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tab) {
+    // Call original function if it exists
+    if (typeof originalSwitchTab === 'function') {
+        originalSwitchTab(tab);
+    }
+    
+    // Handle the clientlist tab specifically
+    if (tab === 'clientlist') {
+        // Hide all tab contents
+        document.querySelectorAll('#projects-content .tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Remove active class from all tab buttons
+        document.querySelectorAll('#projects-content .tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Show client list section
+        const clientListSection = document.getElementById('clientlist-section');
+        if (clientListSection) {
+            clientListSection.classList.add('active');
+        }
+        
+        // Set active tab button
+        const tabClientListBtn = document.getElementById('tabClientList');
+        if (tabClientListBtn) {
+            tabClientListBtn.classList.add('active');
+        }
+        
+        // Populate the client list
+        populateProjectClientList();
+    }
+};
+
+// Auto-populate when the page loads (if on projects page)
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if we're on the projects page
+    const projectsContent = document.getElementById('projects-content');
+    if (projectsContent && projectsContent.classList.contains('active')) {
+        populateProjectClientList();
+    }
+});
+
 // Handle project type change
 function handleProjectTypeChange() {
     const typeSelect = document.getElementById('typeOfProject');
