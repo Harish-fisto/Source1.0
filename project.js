@@ -1,622 +1,729 @@
-class ProjectManager {
-    constructor() {
-        this.projects = this.loadProjects();
-        this.uploadedDocuments = [];
-        this.initializeEventListeners();
-        this.setDefaultDate();
-        this.updateTable();
-    }
+// ============================
+// PROJECT DASHBOARD MANAGEMENT
+// ============================
 
-    loadProjects() {
-        const saved = localStorage.getItem('projects');
-        return saved ? JSON.parse(saved) : [];
-    }
+// Store projects data in memory
+let projectsData = [];
+let currentProjectId = null;
+let currentPage = 1;
+const projectsPerPage = 10;
 
-    saveProjects() {
-        localStorage.setItem('projects', JSON.stringify(this.projects));
-    }
+// Sample data structure (replace with your actual data)
+const sampleProjects = [
+  {
+    id: 1,
+    name: "Hiring Platform",
+    client: "Accenture",
+    progress: 45,
+    teamHead: { name: "Fisto", avatar: "https://via.placeholder.com/32" },
+    startDate: "07/10/2025",
+    deadline: "30/10/2025",
+    description: "This project aims to streamline production workflows and reduce equipment downtime in the main manufacturing unit.",
+    priority: "High",
+    initiatedBy: { name: "Anisha", avatar: "https://via.placeholder.com/40" },
+    allocatedTeam: "Software",
+    employees: [],
+    tasks: [
+      {
+        id: 1,
+        title: "Assembling motors with different parts",
+        assignedBy: { name: "Dinesh", avatar: "https://via.placeholder.com/32" },
+        assignedTo: { name: "Avinash", avatar: "https://via.placeholder.com/32" },
+        startDate: "12-08-2025",
+        endDate: "24-07-2026",
+        status: "working"
+      },
+      {
+        id: 2,
+        title: "Designing user interfaces for apps",
+        assignedBy: { name: "Dinesh", avatar: "https://via.placeholder.com/32" },
+        assignedTo: { name: "Meera", avatar: "https://via.placeholder.com/32" },
+        startDate: "15-08-2025",
+        endDate: "30-09-2026",
+        status: "done"
+      }
+    ]
+  }
+];
 
-    initializeEventListeners() {
-        // Form submission
-        const form = document.getElementById('projectForm');
-        if (form) {
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleFormSubmit();
-            });
-        }
-
-        // Document upload handler
-        const docUpload = document.getElementById('projectDocUpload');
-        if (docUpload) {
-            docUpload.addEventListener('change', (e) => this.handleDocumentUpload(e));
-        }
-
-        // Escape key to close modals
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.closeForm();
-                this.closeViewModal();
-            }
-        });
-    }
-
-    setDefaultDate() {
-        const today = new Date().toISOString().split('T')[0];
-        const dateInput = document.getElementById('date');
-        if (dateInput) {
-            dateInput.value = today;
-        }
-    }
-
-    openForm() {
-        document.getElementById('addProjectModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-
-    closeForm() {
-        document.getElementById('addProjectModal').classList.remove('show');
-        document.body.style.overflow = 'auto';
-        this.resetForm();
-    }
-
-    closeViewModal() {
-        const viewModal = document.getElementById('viewProjectModal');
-        if (viewModal) {
-            viewModal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-    }
-
-    resetForm() {
-        const form = document.getElementById('projectForm');
-        if (form) {
-            form.reset();
-            this.setDefaultDate();
-        }
-        
-        // Reset custom project type field
-        const customInput = document.getElementById('customProjectType');
-        if (customInput) {
-            customInput.style.display = 'none';
-        }
-        
-        // Clear uploaded documents
-        this.uploadedDocuments = [];
-        this.clearDocumentPreviews();
-    }
-
-    handleDocumentUpload(event) {
-        const files = event.target.files;
-        const previewContainer = document.getElementById('projectDocPreview');
-        
-        if (!previewContainer) return;
-        
-        for (let file of files) {
-            // Store file reference
-            this.uploadedDocuments.push({
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                lastModified: file.lastModified
-            });
-            
-            const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item';
-            
-            // Create preview based on file type
-            if (file.type.startsWith('image/')) {
-                const img = document.createElement('img');
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-                previewItem.appendChild(img);
-            } else {
-                // For non-image files, show file icon
-                const fileIcon = document.createElement('i');
-                fileIcon.className = 'fas fa-file-alt';
-                fileIcon.style.fontSize = '48px';
-                fileIcon.style.color = '#6b7280';
-                fileIcon.style.display = 'flex';
-                fileIcon.style.alignItems = 'center';
-                fileIcon.style.justifyContent = 'center';
-                fileIcon.style.height = '70%';
-                previewItem.appendChild(fileIcon);
-            }
-            
-            // Add file name
-            const fileName = document.createElement('div');
-            fileName.className = 'file-name';
-            fileName.textContent = file.name;
-            previewItem.appendChild(fileName);
-            
-            // Add remove button
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'remove-preview';
-            removeBtn.innerHTML = '×';
-            removeBtn.onclick = () => {
-                const index = this.uploadedDocuments.findIndex(d => d.name === file.name);
-                if (index > -1) {
-                    this.uploadedDocuments.splice(index, 1);
-                }
-                previewItem.remove();
-            };
-            previewItem.appendChild(removeBtn);
-            
-            previewContainer.appendChild(previewItem);
-        }
-        
-        // Reset input to allow re-uploading same file
-        event.target.value = '';
-    }
-
-    clearDocumentPreviews() {
-        const previewContainer = document.getElementById('projectDocPreview');
-        if (previewContainer) {
-            previewContainer.innerHTML = '';
-        }
-    }
-
-    handleFormSubmit() {
-        const formData = new FormData(document.getElementById('projectForm'));
-        
-        // Get project type value
-        let projectType = formData.get('typeOfProject');
-        if (projectType === 'other') {
-            projectType = formData.get('customProjectType') || 'Other';
-        }
-
-        const projectData = {
-            id: Date.now().toString(),
-            projectName: formData.get('projectName'),
-            customerId: formData.get('customerId'),
-            specification: formData.get('specification') || 'N/A',
-            contactPerson: formData.get('contactPerson'),
-            contactNumber: formData.get('contactNumber'),
-            contactEmail: formData.get('contactEmail'),
-            contactDesignation: formData.get('contactDesignation'),
-            documents: this.uploadedDocuments,
-            documentLink: formData.get('projectDocLink') || '',
-            typeOfProject: projectType,
-            allocatedTeam: formData.get('allocatedTeam'),
-            reportingPerson: formData.get('reportingPerson'),
-            date: formData.get('date'),
-            deadline: formData.get('deadline'),
-            remarks: formData.get('remarks') || '',
-            createdAt: new Date().toISOString()
-        };
-
-        this.addProject(projectData);
-        this.closeForm();
-        this.showToast('Project Added Successfully', `${projectData.projectName} has been added to the project list.`);
-        
-        // Also save to clients if not exists
-        this.saveClientData(projectData);
-    }
-
-    saveClientData(projectData) {
-        let clients = JSON.parse(localStorage.getItem('clients') || '[]');
-        
-        // Check if client already exists
-        const existingClient = clients.find(c => c.customerId === projectData.customerId);
-        
-        if (!existingClient) {
-            clients.push({
-                customerId: projectData.customerId,
-                customerName: projectData.contactPerson,
-                phoneNo: projectData.contactNumber,
-                mailId: projectData.contactEmail,
-                designation: projectData.contactDesignation,
-                createdAt: new Date().toISOString()
-            });
-            localStorage.setItem('clients', JSON.stringify(clients));
-        }
-    }
-
-    addProject(projectData) {
-        this.projects.push(projectData);
-        this.saveProjects();
-        this.updateTable();
-    }
-
-    updateTable() {
-        const tbody = document.getElementById('projectTableBody');
-        
-        if (!tbody) return;
-        
-        if (this.projects.length === 0) {
-            tbody.innerHTML = `
-                <tr class="empty-state">
-                    <td colspan="8">
-                        <div class="empty-content">
-                            <i class="fas fa-project-diagram"></i>
-                            <p>No projects found</p>
-                            <small>Click "Add Project" to get started</small>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        tbody.innerHTML = this.projects.map((project, index) => `
-            <tr>
-                <td>${this.formatDate(project.date)}</td>
-                <td>${project.projectName}</td>
-                <td>${project.customerId}</td>
-                <td>${project.contactNumber}</td>
-                <td>
-                    <span class="status-badge">${project.typeOfProject}</span>
-                </td>
-                <td>${this.truncateText(project.specification, 50)}</td>
-                <td>
-                    <button class="view-btn" onclick="projectManager.viewProject(${index})">
-                        <i class="fas fa-eye"></i> View
-                    </button>
-                </td>
-                <td>
-                    <button class="delete-btn" onclick="projectManager.deleteProject(${index})" 
-                      style="background: #ef4444; color: white; border: none; padding: 8px 12px; 
-                             border-radius: 4px; cursor: pointer;">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    viewProject(index) {
-        const project = this.projects[index];
-        if (!project) {
-            console.error('Project not found at index:', index);
-            return;
-        }
-        
-        const viewContent = document.getElementById('projectViewContent');
-        if (!viewContent) return;
-        
-        viewContent.innerHTML = `
-            <div class="view-grid">
-                <div class="view-item">
-                    <h4>Project Name</h4>
-                    <p>${project.projectName}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Customer ID</h4>
-                    <p>${project.customerId}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Contact Person</h4>
-                    <p>${project.contactPerson}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Contact Number</h4>
-                    <p>${project.contactNumber}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Email</h4>
-                    <p>${project.contactEmail}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Designation</h4>
-                    <p>${project.contactDesignation}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Type of Project</h4>
-                    <p>${project.typeOfProject}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Allocated Team</h4>
-                    <p>${project.allocatedTeam}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Reporting Person</h4>
-                    <p>${project.reportingPerson}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Start Date</h4>
-                    <p>${this.formatDate(project.date)}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Completion Date</h4>
-                    <p>${this.formatDate(project.deadline)}</p>
-                </div>
-                <div class="view-item">
-                    <h4>Documents</h4>
-                    <p>${project.documents && project.documents.length > 0 ? 
-                        project.documents.map(d => d.name).join(', ') : 'No documents'}</p>
-                </div>
-                <div class="view-item" style="grid-column: 1 / -1;">
-                    <h4>Project Description</h4>
-                    <p>${project.specification}</p>
-                </div>
-                <div class="view-item" style="grid-column: 1 / -1;">
-                    <h4>Remarks</h4>
-                    <p>${project.remarks || 'No remarks'}</p>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('viewProjectModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-
-    deleteProject(index) {
-        if (confirm('Are you sure you want to delete this project?')) {
-            this.projects.splice(index, 1);
-            this.saveProjects();
-            this.updateTable();
-            this.showToast('Project Deleted', 'Project has been removed successfully.');
-        }
-    }
-
-    truncateText(text, maxLength) {
-        if (!text) return 'N/A';
-        return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-    }
-
-    formatDate(dateString) {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    }
-
-    showToast(title, description) {
-        const toastContainer = document.getElementById('projectToastContainer') || 
-                              document.getElementById('toast-container');
-        
-        if (!toastContainer) return;
-
-        const toast = document.createElement('div');
-        toast.className = 'toast success';
-        toast.innerHTML = `
-            <h4>${title}</h4>
-            <p>${description}</p>
-        `;
-        
-        toastContainer.appendChild(toast);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
+// Initialize the dashboard
+function initializeProjectDashboard() {
+  // Load projects from storage or use sample data
+  const storedProjects = getStoredProjects();
+  projectsData = storedProjects.length > 0 ? storedProjects : sampleProjects;
+  
+  // Render the projects list
+  renderProjectsList();
+  
+  // Setup event listeners
+  setupEventListeners();
 }
 
-function populateProjectClientList() {
-    const tbody = document.getElementById('clientListTableBody');
-    
-    // Check if clientManager exists and has clients data
-    if (typeof clientManager !== 'undefined' && clientManager.clients && clientManager.clients.length > 0) {
-        tbody.innerHTML = clientManager.clients.map((client, index) => `
-            <tr>
-                <td>
-                    <span class="status-badge status-${(client.status || 'none').toLowerCase().replace(/\s+/g, '')}">
-                        ${client.status || 'None'}
-                    </span>
-                </td>
-                <td>${client.remarks || 'N/A'}</td>
-                <td>${formatDate(client.Date)}</td>
-                <td>${formatDate(client.updatedAt)}</td>
-                <td>${client.customerId}</td>
-                <td>${client.companyName}</td>
-                <td>${client.customerName}</td>
-                <td>${client.phoneNo}</td>
-                <td>${client.mailId}</td>
-                <td>
-                    <button class="view-btn" onclick="viewClientFromProject(${index})" style="
-                        background: #17a2b8;
-                        color: white;
-                        border: none;
-                        padding: 8px 12px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 12px;
-                        transition: all 0.3s ease;
-                    ">
-                        <i class="fas fa-eye"></i> View
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    } else {
-        tbody.innerHTML = `
-            <tr class="empty-state">
-                <td colspan="10">
-                    <div class="empty-content">
-                        <i class="fas fa-users"></i>
-                        <p>No clients found</p>
-                        <small>No client data available</small>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }
+// Get projects from memory storage
+function getStoredProjects() {
+  // Since we can't use localStorage, return empty array
+  // In a real app, this would fetch from your backend
+  return [];
 }
 
-// Function to view client details from project page (read-only)
-function viewClientFromProject(index) {
-    if (typeof clientManager !== 'undefined' && clientManager.clients[index]) {
-        const client = clientManager.clients[index];
-        const clientviewContent = document.getElementById('clientviewContent');
-
-        clientviewContent.innerHTML = `
-            <div class="view-details" style="padding: 20px;">
-                <h3 style="margin-bottom: 20px; color: #333;">Client Details</h3>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px;">
-                    <div>
-                        <strong style="color: #666;">Date:</strong>
-                        <p style="margin: 5px 0;">${formatDate(client.Date)}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Customer ID:</strong>
-                        <p style="margin: 5px 0;">${client.customerId || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Company Name:</strong>
-                        <p style="margin: 5px 0;">${client.companyName || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Customer Name:</strong>
-                        <p style="margin: 5px 0;">${client.customerName || 'N/A'}</p>
-                    </div>
-                    <div style="grid-column: 1 / -1;">
-                        <strong style="color: #666;">Address:</strong>
-                        <p style="margin: 5px 0;">${client.address || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Industry Type:</strong>
-                        <p style="margin: 5px 0;">${client.industryType || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Website:</strong>
-                        <p style="margin: 5px 0;">${client.website || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Reference:</strong>
-                        <p style="margin: 5px 0;">${client.reference || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Status:</strong>
-                        <p style="margin: 5px 0;">
-                            <span class="status-badge status-${(client.status || 'none').toLowerCase().replace(/\s+/g, '')}">
-                                ${client.status || 'None'}
-                            </span>
-                        </p>
-                    </div>
-                    <div style="grid-column: 1 / -1;">
-                        <strong style="color: #666;">Remarks:</strong>
-                        <p style="margin: 5px 0;">${client.remarks || 'N/A'}</p>
-                    </div>
-                </div>
-
-                <h3 style="margin: 30px 0 20px 0; color: #333;">Contact Details</h3>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                    <div>
-                        <strong style="color: #666;">Contact Person:</strong>
-                        <p style="margin: 5px 0;">${client.contactPerson || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Phone Number:</strong>
-                        <p style="margin: 5px 0;">${client.phoneNo || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Mail ID:</strong>
-                        <p style="margin: 5px 0;">${client.mailId || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <strong style="color: #666;">Designation:</strong>
-                        <p style="margin: 5px 0;">${client.designation || 'N/A'}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('clientviewModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
+// Save projects to memory
+function saveProjects() {
+  // Store in memory only - no localStorage
+  // In a real app, this would send to your backend
+  console.log('Projects saved to memory:', projectsData);
 }
 
-// Helper function to format dates
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+// ============================
+// PROJECTS LIST VIEW (Image 2)
+// ============================
+
+function renderProjectsList() {
+  const tbody = document.getElementById('projectsListTableBody');
+  const projectCount = document.getElementById('projectCount');
+  
+  if (!tbody) return;
+  
+  // Update count
+  if (projectCount) {
+    projectCount.textContent = projectsData.length;
+  }
+  
+  // Clear existing rows
+  tbody.innerHTML = '';
+  
+  if (projectsData.length === 0) {
+    tbody.innerHTML = `
+      <tr class="empty-state">
+        <td colspan="6">
+          <div class="empty-content">
+            <i class="fas fa-project-diagram"></i>
+            <p>No projects found</p>
+            <small>Click "New Project" to get started</small>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  // Calculate pagination
+  const startIndex = (currentPage - 1) * projectsPerPage;
+  const endIndex = startIndex + projectsPerPage;
+  const paginatedProjects = projectsData.slice(startIndex, endIndex);
+  
+  // Render each project
+  paginatedProjects.forEach(project => {
+    const row = createProjectRow(project);
+    tbody.appendChild(row);
+  });
+  
+  // Update pagination
+  updatePagination();
 }
 
-// Modify the existing switchTab function to handle the new client list tab
-// Add this to your existing switchTab function in project.js or dashboard.js
-const originalSwitchTab = window.switchTab;
-window.switchTab = function(tab) {
-    // Call original function if it exists
-    if (typeof originalSwitchTab === 'function') {
-        originalSwitchTab(tab);
-    }
-    
-    // Handle the clientlist tab specifically
-    if (tab === 'clientlist') {
-        // Hide all tab contents
-        document.querySelectorAll('#projects-content .tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        
-        // Remove active class from all tab buttons
-        document.querySelectorAll('#projects-content .tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // Show client list section
-        const clientListSection = document.getElementById('clientlist-section');
-        if (clientListSection) {
-            clientListSection.classList.add('active');
-        }
-        
-        // Set active tab button
-        const tabClientListBtn = document.getElementById('tabClientList');
-        if (tabClientListBtn) {
-            tabClientListBtn.classList.add('active');
-        }
-        
-        // Populate the client list
-        populateProjectClientList();
-    }
-};
-
-// Auto-populate when the page loads (if on projects page)
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on the projects page
-    const projectsContent = document.getElementById('projects-content');
-    if (projectsContent && projectsContent.classList.contains('active')) {
-        populateProjectClientList();
-    }
-});
-
-// Handle project type change
-function handleProjectTypeChange() {
-    const typeSelect = document.getElementById('typeOfProject');
-    const customInput = document.getElementById('customProjectType');
-    
-    if (!typeSelect || !customInput) return;
-    
-    if (typeSelect.value === 'other') {
-        customInput.style.display = 'block';
-        customInput.required = true;
-    } else {
-        customInput.style.display = 'none';
-        customInput.required = false;
-        customInput.value = '';
-    }
+function createProjectRow(project) {
+  const tr = document.createElement('tr');
+  
+  // Generate random color for project indicator
+  const colors = ['#4169E1', '#DC143C', '#9ACD32', '#FF6347', '#8B4513'];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  
+  tr.innerHTML = `
+    <td>
+      <div class="project-name-cell">
+        <div class="project-color-indicator" style="background: ${randomColor};"></div>
+        <div class="project-info-cell">
+          <span class="project-title">${project.name}</span>
+          <span class="project-client">${project.client || 'N/A'}</span>
+        </div>
+      </div>
+    </td>
+    <td>
+      <div class="progress-container">
+        <div class="progress-bar-wrapper">
+          <div class="progress-bar-fill" style="width: ${project.progress || 0}%"></div>
+        </div>
+        <span class="progress-percentage">${project.progress || 0}%</span>
+      </div>
+    </td>
+    <td>
+      <div class="team-head-cell">
+        <img src="${project.teamHead?.avatar || 'https://via.placeholder.com/32'}" 
+             alt="${project.teamHead?.name || 'N/A'}" 
+             class="team-head-avatar">
+        <span class="team-head-name">${project.teamHead?.name || 'N/A'}</span>
+      </div>
+    </td>
+    <td class="date-cell">${project.startDate || 'N/A'}</td>
+    <td class="date-cell">${project.deadline || 'N/A'}</td>
+    <td>
+      <button class="view-btn" onclick="viewProjectDetail(${project.id})">View</button>
+    </td>
+  `;
+  
+  return tr;
 }
 
-// Global function for document upload
-function handleProjectDocUpload(event) {
-    if (window.projectManager) {
-        window.projectManager.handleDocumentUpload(event);
-    }
+function updatePagination() {
+  const totalPages = Math.ceil(projectsData.length / projectsPerPage);
+  const paginationNumbers = document.getElementById('paginationNumbers');
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  
+  if (!paginationNumbers) return;
+  
+  // Clear existing page numbers
+  paginationNumbers.innerHTML = '';
+  
+  // Create page number buttons
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'page-number' + (i === currentPage ? ' active' : '');
+    btn.textContent = i.toString().padStart(2, '0');
+    btn.onclick = () => goToPage(i);
+    paginationNumbers.appendChild(btn);
+  }
+  
+  // Update prev/next buttons
+  if (prevBtn) {
+    prevBtn.disabled = currentPage === 1;
+  }
+  if (nextBtn) {
+    nextBtn.disabled = currentPage === totalPages;
+  }
 }
 
-// Initialize the project manager
-const projectManager = new ProjectManager();
-window.projectManager = projectManager;
+function goToPage(page) {
+  currentPage = page;
+  renderProjectsList();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-// Global functions for HTML onclick handlers
+// ============================
+// PROJECT DETAIL VIEW (Image 1)
+// ============================
+
+function viewProjectDetail(projectId) {
+  currentProjectId = projectId;
+  const project = projectsData.find(p => p.id === projectId);
+  
+  if (!project) {
+    console.error('Project not found:', projectId);
+    return;
+  }
+  
+  // Hide projects list, show detail view
+  document.getElementById('projects-list-view').style.display = 'none';
+  document.getElementById('project-detail-view').style.display = 'block';
+  
+  // Update breadcrumb
+  document.getElementById('breadcrumbProjectName').textContent = project.name;
+  
+  // Render project details
+  renderProjectDetail(project);
+}
+
+function renderProjectDetail(project) {
+  // Update stats cards
+  const totalTasks = project.tasks?.length || 0;
+  const completedTasks = project.tasks?.filter(t => t.status === 'done').length || 0;
+  const ongoingTasks = project.tasks?.filter(t => t.status === 'working').length || 0;
+  const assignedEmployees = new Set(project.tasks?.map(t => t.assignedTo?.name)).size || 0;
+  
+  document.getElementById('assignedEmployeesCount').textContent = assignedEmployees;
+  document.getElementById('totalTasksCount').textContent = totalTasks;
+  document.getElementById('completedTasksCount').textContent = completedTasks;
+  document.getElementById('ongoingTasksCount').textContent = ongoingTasks;
+  document.getElementById('delayedTasksCount').textContent = '0';
+  document.getElementById('overdueTasksCount').textContent = '0';
+  
+  // Update project info
+  document.getElementById('projectNameTitle').textContent = project.name;
+  document.getElementById('projectDescription').textContent = project.description || 'No description available.';
+  document.getElementById('projectPriority').textContent = project.priority || 'Medium';
+  
+  // Update initiator info
+  if (project.initiatedBy) {
+    document.getElementById('initiatorName').textContent = project.initiatedBy.name;
+    document.getElementById('initiatorAvatar').src = project.initiatedBy.avatar;
+  }
+  
+  // Update team head info
+  if (project.teamHead) {
+    document.getElementById('teamHeadName').textContent = project.teamHead.name;
+    document.getElementById('teamHeadAvatar').src = project.teamHead.avatar;
+  }
+  
+  // Update dates
+  document.getElementById('projectStartDate').textContent = project.startDate || 'N/A';
+  document.getElementById('projectDeadlineDate').textContent = project.deadline || 'N/A';
+  
+  // Render tasks table
+  renderProjectTasks(project.tasks || []);
+}
+
+function renderProjectTasks(tasks) {
+  const tbody = document.getElementById('projectTasksTableBody');
+  
+  if (!tbody) return;
+  
+  tbody.innerHTML = '';
+  
+  if (tasks.length === 0) {
+    tbody.innerHTML = `
+      <tr class="empty-state">
+        <td colspan="7">
+          <div class="empty-content">
+            <i class="fas fa-tasks"></i>
+            <p>No tasks found</p>
+            <small>Click "Add Task" to get started</small>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  tasks.forEach((task, index) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${task.title}</td>
+      <td>
+        <div class="task-assignee">
+          <img src="${task.assignedBy?.avatar || 'https://via.placeholder.com/32'}" 
+               alt="${task.assignedBy?.name || 'N/A'}" 
+               class="task-assignee-avatar">
+          <span class="task-assignee-name">${task.assignedBy?.name || 'N/A'}</span>
+        </div>
+      </td>
+      <td>
+        <div class="task-assignee">
+          <img src="${task.assignedTo?.avatar || 'https://via.placeholder.com/32'}" 
+               alt="${task.assignedTo?.name || 'N/A'}" 
+               class="task-assignee-avatar">
+          <span class="task-assignee-name">${task.assignedTo?.name || 'N/A'}</span>
+        </div>
+      </td>
+      <td>${task.startDate || 'N/A'}</td>
+      <td>${task.endDate || 'N/A'}</td>
+      <td>
+        <span class="status-badge ${task.status || 'pending'}">
+          ${getStatusText(task.status)}
+        </span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function getStatusText(status) {
+  const statusMap = {
+    'done': 'Done',
+    'working': 'Working on it',
+    'stuck': 'Stuck',
+    'pending': 'Pending'
+  };
+  return statusMap[status] || 'Pending';
+}
+
+function showProjectsList() {
+  document.getElementById('project-detail-view').style.display = 'none';
+  document.getElementById('projects-list-view').style.display = 'block';
+  currentProjectId = null;
+}
+
+// ============================
+// TAB SWITCHING
+// ============================
+
+function setupEventListeners() {
+  // Detail view tabs
+  const detailTabs = document.querySelectorAll('.detail-tab');
+  detailTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabName = tab.getAttribute('data-tab');
+      switchDetailTab(tabName);
+    });
+  });
+  
+  // View toggles (Timeline/List)
+  const viewToggles = document.querySelectorAll('.view-toggle-btn');
+  viewToggles.forEach(toggle => {
+    toggle.addEventListener('click', () => {
+      viewToggles.forEach(t => t.classList.remove('active'));
+      toggle.classList.add('active');
+    });
+  });
+  
+  // Search functionality
+  const projectSearch = document.getElementById('projectSearchInput');
+  if (projectSearch) {
+    projectSearch.addEventListener('input', (e) => {
+      filterProjects(e.target.value);
+    });
+  }
+  
+  // Pagination buttons
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        goToPage(currentPage - 1);
+      }
+    });
+  }
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(projectsData.length / projectsPerPage);
+      if (currentPage < totalPages) {
+        goToPage(currentPage + 1);
+      }
+    });
+  }
+}
+
+function switchDetailTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.detail-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.getAttribute('data-tab') === tabName) {
+      tab.classList.add('active');
+    }
+  });
+  
+  // Update tab panels
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.remove('active');
+  });
+  
+  const activePanel = document.getElementById(`${tabName}-panel`);
+  if (activePanel) {
+    activePanel.classList.add('active');
+  }
+}
+
+// ============================
+// SEARCH AND FILTER
+// ============================
+
+function filterProjects(searchTerm) {
+  const filtered = projectsData.filter(project => {
+    return project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (project.client && project.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
+           (project.teamHead?.name && project.teamHead.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  });
+  
+  // Temporarily replace projectsData for rendering
+  const originalData = [...projectsData];
+  projectsData = filtered;
+  currentPage = 1;
+  renderProjectsList();
+  projectsData = originalData;
+}
+
+
+// ============================
+// ADD NEW PROJECT
+// ============================
+
 function openProjectForm() {
-    projectManager.openForm();
+  const modal = document.getElementById('addProjectModal');
+  if (modal) {
+    modal.style.display = 'block';
+  }
 }
 
 function closeProjectForm() {
-    projectManager.closeForm();
+  const modal = document.getElementById('addProjectModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
 }
 
-function closeProjectViewModal() {
-    projectManager.closeViewModal();
+// Handle project form submission
+function handleProjectFormSubmit(formData) {
+  const newProject = {
+    id: projectsData.length + 1,
+    name: formData.projectName,
+    client: formData.customerId,
+    progress: 0,
+    teamHead: { name: formData.reportingPerson, avatar: 'https://via.placeholder.com/32' },
+    startDate: formatDate(formData.date),
+    deadline: formatDate(formData.deadline),
+    description: formData.specification,
+    priority: 'Medium',
+    initiatedBy: { name: 'Current User', avatar: 'https://via.placeholder.com/40' },
+    allocatedTeam: formData.allocatedTeam,
+    employees: [],
+    tasks: []
+  };
+  
+  projectsData.push(newProject);
+  saveProjects();
+  renderProjectsList();
+  closeProjectForm();
+  
+  showToast('Project created successfully!', 'success');
 }
+
+// ============================
+// TASK ALLOCATION MODAL FUNCTIONS
+// ============================
+
+// Function to open Task Allocation Modal
+function openTaskAllocationForm() {
+  const modal = document.getElementById('addTaskAllocationModal');
+  const form = document.getElementById('TaskAllocationForm');
+  
+  if (modal) {
+    modal.style.display = 'block';
+    
+    // Reset form if it exists
+    if (form) {
+      form.reset();
+    }
+    
+    // If we're in a project detail view, pre-fill project info
+    if (currentProjectId) {
+      const project = projectsData.find(p => p.id === currentProjectId);
+      if (project) {
+        // You can pre-fill any project-specific information here
+        console.log('Adding task to project:', project.name);
+      }
+    }
+  }
+}
+
+// Function to close Task Allocation Modal
+function closeTaskAllocationForm() {
+  console.log('closeTaskAllocationForm called');
+  const modal = document.getElementById('addTaskAllocationModal');
+  if (modal) {
+    modal.style.display = 'none';
+    console.log('Modal hidden');
+    
+    // Reset the form
+    const form = document.getElementById('TaskAllocationForm');
+    if (form) {
+      form.reset();
+    }
+  } else {
+    console.error('Modal element not found');
+  }
+}
+
+// ============================
+// FORM SUBMISSION HANDLERS
+// ============================
+
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Handle Task Allocation Form Submission
+  
+  if (taskForm) {
+    taskForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Validate form
+      if (!taskForm.checkValidity()) {
+        taskForm.reportValidity();
+        return;
+      }
+      
+      // Collect form data
+      const formData = {
+        id: Date.now(), // Generate unique ID
+        title: document.getElementById('taskTitle').value.trim(),
+        assignedBy: {
+          name: document.getElementById('taskAssignedBy').value.trim(),
+          avatar: 'https://via.placeholder.com/32'
+        },
+        assignedTo: {
+          name: document.getElementById('taskAssignedTo').value,
+          avatar: 'https://via.placeholder.com/32'
+        },
+        startDate: formatDate(document.getElementById('taskStartDate').value),
+        endDate: formatDate(document.getElementById('taskEndDate').value),
+        status: document.getElementById('taskStatus').value,
+        description: document.getElementById('taskDescription').value.trim()
+      };
+      
+      console.log('Task Allocation Data:', formData);
+      
+      // If we're in a project detail view, add task to that project
+      if (currentProjectId) {
+        const project = projectsData.find(p => p.id === currentProjectId);
+        if (project) {
+          if (!project.tasks) {
+            project.tasks = [];
+          }
+          project.tasks.push(formData);
+          
+          // Save and re-render
+          saveProjects();
+          renderProjectDetail(project);
+          
+          showToast('Task added successfully!', 'success');
+        }
+      } else {
+        showToast('Task created successfully!', 'success');
+      }
+      
+      // Close modal and reset form
+      closeTaskAllocationForm();
+    });
+  }
+});
+
+// ============================
+// PROJECT ALLOCATION MODAL FUNCTIONS
+// ============================
+
+// Function to open Project Allocation Modal
+function openProjectAllocationForm() {
+  const modal = document.getElementById('addProjectAllocationModal');
+  
+  if (!modal) {
+    console.error('Project Allocation Modal not found');
+    showToast('Modal not found. Please check the HTML structure.', 'error');
+    return;
+  }
+  
+  if (!currentProjectId) {
+    showToast('No project selected', 'error');
+    return;
+  }
+  
+  const project = projectsData.find(p => p.id === currentProjectId);
+  if (!project) {
+    showToast('Project not found', 'error');
+    return;
+  }
+  
+  // Show the modal
+  modal.style.display = 'block';
+  
+  // Pre-fill project information
+  const allocProjectName = document.getElementById('allocProjectName');
+  const allocStartDate = document.getElementById('allocStartDate');
+  const allocDeadline = document.getElementById('allocDeadline');
+  const allocProjectDescription = document.getElementById('allocProjectDescription');
+  
+  if (allocProjectName) allocProjectName.value = project.name;
+  if (allocStartDate) allocStartDate.value = project.startDate ? convertDateFormat(project.startDate) : '';
+  if (allocDeadline) allocDeadline.value = project.deadline ? convertDateFormat(project.deadline) : '';
+  if (allocProjectDescription) allocProjectDescription.value = project.description || '';
+}
+
+// Function to close Project Allocation Modal
+function closeProjectAllocationForm() {
+  const modal = document.getElementById('addProjectAllocationModal');
+  if (modal) {
+    modal.style.display = 'none';
+    
+    // Reset the form
+    const form = document.getElementById('allocationForm');
+    if (form) {
+      form.reset();
+    }
+  }
+}
+
+// Handle Project Allocation Form Submission
+function handleProjectAllocationSubmit(e) {
+  e.preventDefault();
+  
+  if (!currentProjectId) {
+    showToast('No project selected', 'error');
+    return;
+  }
+  
+  const project = projectsData.find(p => p.id === currentProjectId);
+  if (!project) {
+    showToast('Project not found', 'error');
+    return;
+  }
+  
+  // Collect form data
+  const employeeName = document.getElementById('allocAssignedTo')?.value;
+  const startDate = document.getElementById('allocStartDate')?.value;
+  const deadline = document.getElementById('allocDeadline')?.value;
+  const remarks = document.getElementById('allocRemarks')?.value;
+  
+  if (!employeeName) {
+    showToast('Please select an employee', 'error');
+    return;
+  }
+  
+  // Add employee to project
+  if (!project.employees) {
+    project.employees = [];
+  }
+  
+  const newEmployee = {
+    name: employeeName,
+    avatar: 'https://via.placeholder.com/40',
+    startDate: startDate ? formatDate(startDate) : project.startDate,
+    deadline: deadline ? formatDate(deadline) : project.deadline,
+    remarks: remarks || ''
+  };
+  
+  project.employees.push(newEmployee);
+  
+  // Save and refresh
+  saveProjects();
+  renderProjectDetail(project);
+  closeProjectAllocationForm();
+  
+  showToast('Employee allocated successfully!', 'success');
+}
+
+// ============================
+// UTILITY FUNCTIONS
+// ============================
+
+function formatDate(dateString) {
+  if (!dateString) return 'N/A';
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('projectToastContainer');
+  if (!container) return;
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 100);
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ============================
+// INITIALIZE ON PAGE LOAD
+// ============================
+
+document.addEventListener('DOMContentLoaded', () => {
+  initializeProjectDashboard();
+});
+
+// Export functions for use in other files
+window.viewProjectDetail = viewProjectDetail;
+window.showProjectsList = showProjectsList;
+window.openProjectForm = openProjectForm;
+window.closeProjectForm = closeProjectForm;
