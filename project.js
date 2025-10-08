@@ -139,14 +139,6 @@ function createProjectRow(project) {
       </div>
     </td>
     <td>
-      <div class="progress-container">
-        <div class="progress-bar-wrapper">
-          <div class="progress-bar-fill" style="width: ${project.progress || 0}%"></div>
-        </div>
-        <span class="progress-percentage">${project.progress || 0}%</span>
-      </div>
-    </td>
-    <td>
       <div class="team-head-cell">
         <img src="${project.teamHead?.avatar || 'https://via.placeholder.com/32'}" 
              alt="${project.teamHead?.name || 'N/A'}" 
@@ -158,6 +150,7 @@ function createProjectRow(project) {
     <td class="date-cell">${project.deadline || 'N/A'}</td>
     <td>
       <button class="view-btn" onclick="viewProjectDetail(${project.id})">View</button>
+      <button class="delete-btn" onclick="employeeDeleteModal(${project.id})">Delete</button>
     </td>
   `;
   
