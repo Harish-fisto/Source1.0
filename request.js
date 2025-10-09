@@ -632,6 +632,17 @@ if (leaveForm) {
     }
   });
 
+   // Apply Tagify to the input
+  new Tagify(document.getElementById('allocatedteam'), {
+    whitelist: ["Software", "3D", "UI/UX", "AR", "Marketing", "R&D", "PH", "SBU Head"],
+    dropdown: {
+      maxItems: 10,
+      enabled: 0, // shows dropdown on focus
+      closeOnSelect: false
+    }
+  });
+
+
   function initializePermissionTimeCalculation() {
     const fromTime = document.getElementById('fromTime');
     const toTime = document.getElementById('toTime');
