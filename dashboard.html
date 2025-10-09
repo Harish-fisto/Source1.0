@@ -366,7 +366,7 @@
                     <button class="close-btn" onclick="closeForm()">&times;</button>
                   </div>
 
-                  <form class="clientform-scrollable-container" id="clientForm" novalidate>
+                  <form class="addclientform-scrollable-container" id="clientForm" novalidate>
                     <!-- Client Details -->
                     <h3 class="sticky-heading">Client Details</h3>
                     <div class="client-details-grid">
@@ -427,11 +427,12 @@
                         <label for="designation">Designation *</label>
                         <input type="text" id="designation" name="designation" required>
                       </div>
-                  </form>
+                  
                 </div>
-                <div class="form-actions client-form-actions">
+                <div class="sticky-submit-container">
                   <button type="submit" class="submit-btn">Submit</button>
                 </div>
+                 </form>
               </div>
             </div>
 
@@ -722,7 +723,10 @@
               <div class="form-grid2">
                 <div class="form-group">
                   <label for="customerId">Customer ID <span class="required">*</span></label>
-                  <input type="text" id="customerId" name="customerId" required>
+                  <select id="customerId" name="customerId" required>
+                    <option value="">-- Select Customer --</option>
+                    <!-- Customers will be loaded here dynamically -->
+                  </select>
                 </div>
 
                 <div class="form-group">
@@ -815,11 +819,11 @@
                   <input type="text" id="projectremarks" name="projectremarks" required>
                 </div>
               </div>
-            </form>
              <!-- ✅ Submit Button -->
-              <div class="form-actions">
+              <div class="sticky-submit-container">
                 <button type="submit" class="submit-btn">Submit</button>
               </div>
+              </form>
           </div>
         </div>
 
@@ -3078,6 +3082,20 @@
         <label for="remarks" style="display: block; text-align: left; margin-bottom: 5px;">Remarks *</label>
         <input type="text" id="remarks" name="remarks" required style="width: 100%;">
       </div>
+      <div id="projectFields" style="display: none;"> <!-- New wrapper -->
+      <div class="form-group" style="text-align: left;">
+        <label for="projectname" style="display: block; text-align: left; margin-bottom: 5px;">Project Name *</label>
+        <input type="text" id="projectname" name="projectname" required style="width: 100%;">
+      </div>
+      <div class="form-group full-width" style="text-align: left">
+      <label for="allocProjectDescription">Project Description </label>
+      <textarea 
+        id="allocProjectDescription" 
+        name="project_description" 
+        rows="4"
+        placeholder="Enter project description..."></textarea>
+    </div>
+    </div>
       <div class="confirm-buttons-c">
         <button id="confirmYesBtn">Yes</button>
         <button id="confirmNoBtn">No</button>

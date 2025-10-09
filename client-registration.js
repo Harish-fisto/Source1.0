@@ -1,3 +1,8 @@
+let remarksInput = document.getElementById('remarks');
+let projectNameInput = document.getElementById('projectname');
+let projectDescInput = document.getElementById('allocProjectDescription');
+
+
 class ClientManager {
     constructor() {
         this.clients = [];
@@ -124,67 +129,93 @@ class ClientManager {
         }
     }
 
-    async confirmStatusChange(confirmed) {
-        const confirmModal = document.getElementById('confirmModal');
-        confirmModal.classList.remove('show');
-        document.body.style.overflow = 'auto';
+async confirmStatusChange(confirmed) {
+    const confirmModal = document.getElementById('confirmModal');
+    confirmModal.classList.remove('show');
+    document.body.style.overflow = 'auto';
 
-        const index = this.pendingStatusIndex;
-        const newStatus = this.pendingStatusNewValue;
-        const remarksInput = document.getElementById('remarks');
-        const newRemarks = remarksInput ? remarksInput.value.trim() : '';
+    const index = this.pendingStatusIndex;
+    const newStatus = this.pendingStatusNewValue;
+    const remarksInput = document.getElementById('remarks');
+    const newRemarks = remarksInput ? remarksInput.value.trim() : '';
 
-        if (confirmed && index != null && this.clients && this.clients[index]) {
-            const client = this.clients[index];
-            
-            try {
-                const updateFormData = new FormData();
-                updateFormData.append('customer_id', client.customerId);
-                updateFormData.append('status', newStatus);
-                updateFormData.append('remarks', newRemarks || client.remarks);
+    if (confirmed && index != null && this.clients && this.clients[index]) {
+        const client = this.clients[index];
 
-                const response = await fetch('https://www.fist-o.com/web_crm/update_client_status.php', {
-                    method: 'POST',
-                    body: updateFormData
-                });
+        try {
+            const updateFormData = new FormData();
+            updateFormData.append('customer_id', client.customerId);
+            updateFormData.append('status', newStatus);
+            updateFormData.append('remarks', newRemarks || client.remarks);
 
-                const result = await response.json();
+            if (newStatus.toLowerCase() === 'onboard') {
+                const projectNameInput = document.querySelector('#projectFields input#projectname');
+                const projectDescInput = document.querySelector('#projectFields textarea#allocProjectDescription');
 
-                if (response.ok && result.status === 'success') {
-                    this.clients[index].status = newStatus;
-                    this.clients[index].remarks = newRemarks || client.remarks;
-                    this.clients[index].updatedAt = new Date().toISOString(); // Update timestamp
-                    
-                    const selectElement = document.querySelector(`tr:nth-child(${index + 1}) select`);
-                    if (selectElement) {
-                        selectElement.className = `status-badge status-${newStatus}`;
-                        selectElement.value = newStatus;
-                    }
-                    
-                    this.updateTable();
-                    this.showToast('Success', 'Status and remarks updated successfully');
-                } else {
-                    this.showToast('Error', result.message || 'Failed to update');
-                    console.error('Server error:', result);
+                const projectName = projectNameInput ? projectNameInput.value.trim() : '';
+                const projectDesc = projectDescInput ? projectDescInput.value.trim() : '';
+
+
+                updateFormData.append('project_name', projectName);
+                updateFormData.append('project_description', projectDesc);
+                console.log('projectDesc')
+            }
+
+            // Disable the Yes button here if needed to prevent double clicks
+
+            const response = await fetch('https://www.fist-o.com/web_crm/update_client_status.php', {
+                method: 'POST',
+                body: updateFormData
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                this.clients[index].status = newStatus;
+                this.clients[index].remarks = newRemarks || client.remarks;
+                this.clients[index].updatedAt = new Date().toISOString();
+            if (newStatus.toLowerCase() === 'onboard') {
+                const projectNameInput = document.querySelector('#projectFields input#projectname');
+                const projectDescInput = document.querySelector('#projectFields textarea#allocProjectDescription');
+
+                this.clients[index].projectName = projectNameInput ? projectNameInput.value.trim() : 'N/A';
+                this.clients[index].projectDescription = projectDescInput ? projectDescInput.value.trim() : 'N/A';
+            }
+
+
+                const selectElement = document.querySelector(`tr:nth-child(${index + 1}) select`);
+                if (selectElement) {
+                    selectElement.className = `status-badge status-${newStatus}`;
+                    selectElement.value = newStatus;
                 }
-            } catch (err) {
-                this.showToast('Error', 'Network error while updating');
-                console.error('Update error:', err);
-            }
-        } else if (!confirmed && index != null && this.clients && this.clients[index]) {
-            const selectElement = document.querySelector(`tr:nth-child(${index + 1}) select`);
-            if (selectElement) {
-                selectElement.value = this.clients[index].status;
-            }
-        }
 
-        this.pendingStatusIndex = null;
-        this.pendingStatusNewValue = null;
-        
-        if (remarksInput) {
-            remarksInput.value = '';
+                this.updateTable();
+                this.showToast('Success', 'Status and project details updated successfully');
+            } else {
+                this.showToast('Error', result.message || 'Failed to update');
+                console.error('Server error:', result);
+            }
+        } catch (err) {
+            this.showToast('Error', 'Network error while updating');
+            console.error('Update error:', err);
+        }
+    } else if (!confirmed && index != null && this.clients && this.clients[index]) {
+        const selectElement = document.querySelector(`tr:nth-child(${index + 1}) select`);
+        if (selectElement) {
+            selectElement.value = this.clients[index].status;
         }
     }
+
+    this.pendingStatusIndex = null;
+    this.pendingStatusNewValue = null;
+
+    // Clear all inputs after closing modal
+    if (remarksInput) remarksInput.value = '';
+    const projectNameInput = document.getElementById('projectname');
+    const projectDescInput = document.getElementById('allocProjectDescription');
+    if (projectNameInput) projectNameInput.value = '';
+    if (projectDescInput) projectDescInput.value = '';
+}
 
     async loadClients() {
         try {
@@ -519,44 +550,109 @@ class ClientManager {
             </tr>`).join('');
     }
 
-    updateStatus(index, newStatus) {
-        this.pendingStatusIndex = index;
-        this.pendingStatusNewValue = newStatus;
+updateStatus(index, newStatus) {
+    this.pendingStatusIndex = index;
+    this.pendingStatusNewValue = newStatus;
 
-        const client = this.clients[index];
-        const confirmMessage = document.getElementById('confirmMessage');
-        const remarksInput = document.getElementById('remarks');
-        const confirmYesBtn = document.getElementById('confirmYesBtn');
+    const client = this.clients[index];
+    const confirmMessage = document.getElementById('confirmMessage');
 
-        confirmMessage.textContent = `Are you sure you want to change ${client.companyName} status to ${newStatus}?`;
+    // Updated IDs to match your HTML:
+    let remarksInput = document.getElementById('remarks');
+    const confirmYesBtn = document.getElementById('confirmYesBtn');
+    const projectFields = document.getElementById('projectFields');
+    let projectNameInput = document.getElementById('projectname');
+    let projectDescInput = document.getElementById('allocProjectDescription');
 
-        if (remarksInput) {
-            remarksInput.value = '';
+    confirmMessage.textContent = `Are you sure you want to change ${client.companyName} status to ${newStatus}?`;
 
-            if (confirmYesBtn) {
+    if (newStatus.toLowerCase() === 'onboard') {
+        projectFields.style.display = 'block';
+        if (projectNameInput) projectNameInput.required = true;
+        if (projectDescInput) projectDescInput.required = true;
+    } else {
+        projectFields.style.display = 'none';
+        if (projectNameInput) {
+            projectNameInput.required = false;
+            projectNameInput.value = '';
+        }
+        if (projectDescInput) {
+            projectDescInput.required = false;
+            projectDescInput.value = '';
+        }
+    }
+
+    // Clear all inputs
+    if (remarksInput) remarksInput.value = '';
+    if (projectNameInput) projectNameInput.value = '';
+    if (projectDescInput) projectDescInput.value = '';
+
+    // Disable Yes button initially
+    confirmYesBtn.disabled = true;
+    confirmYesBtn.style.opacity = '0.5';
+    confirmYesBtn.style.cursor = 'not-allowed';
+
+    // Validation function
+    const validateFields = () => {
+        console.log('hi')
+        const remarksFilled = remarksInput && remarksInput.value.trim() !== '';
+        if (newStatus.toLowerCase() === 'onboard') {
+            const projectNameFilled = projectNameInput && projectNameInput.value.trim() !== '';
+            const projectDescFilled = projectDescInput && projectDescInput.value.trim() !== '';
+            if (remarksFilled && projectNameFilled) {
+                confirmYesBtn.disabled = false;
+                confirmYesBtn.style.opacity = '1';
+                confirmYesBtn.style.cursor = 'pointer';
+            } else {
                 confirmYesBtn.disabled = true;
                 confirmYesBtn.style.opacity = '0.5';
                 confirmYesBtn.style.cursor = 'not-allowed';
             }
+        } else {
+            if (remarksFilled) {
+                confirmYesBtn.disabled = false;
+                confirmYesBtn.style.opacity = '1';
+                confirmYesBtn.style.cursor = 'pointer';
+            } else {
+                confirmYesBtn.disabled = true;
+                confirmYesBtn.style.opacity = '0.5';
+                confirmYesBtn.style.cursor = 'not-allowed';
+            }
+        }
+    };
 
-            remarksInput.addEventListener('input', function () {
-                if (confirmYesBtn) {
-                    if (this.value.trim() === '') {
-                        confirmYesBtn.disabled = true;
-                        confirmYesBtn.style.opacity = '0.5';
-                        confirmYesBtn.style.cursor = 'not-allowed';
-                    } else {
-                        confirmYesBtn.disabled = false;
-                        confirmYesBtn.style.opacity = '1';
-                        confirmYesBtn.style.cursor = 'pointer';
-                    }
-                }
-            }, { once: true });
+    // Clone inputs to remove old listeners & re-assign references
+   // Clone inputs to remove old event listeners and update variables
+        if (remarksInput) {
+            const newRemarksInput = remarksInput.cloneNode(true);
+            remarksInput.parentNode.replaceChild(newRemarksInput, remarksInput);
+            remarksInput = newRemarksInput;
+            remarksInput.addEventListener('input', validateFields);
         }
 
-        document.getElementById('confirmModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
+        if (newStatus.toLowerCase() === 'onboard') {
+            if (projectNameInput) {
+                const newProjectNameInput = projectNameInput.cloneNode(true);
+                projectNameInput.parentNode.replaceChild(newProjectNameInput, projectNameInput);
+                projectNameInput = newProjectNameInput;
+                projectNameInput.addEventListener('input', validateFields);
+            }
+          if (projectDescInput) {
+                const newProjectDescInput = projectDescInput.cloneNode(true);
+                projectDescInput.parentNode.replaceChild(newProjectDescInput, projectDescInput);
+                projectDescInput = newProjectDescInput; // ✅ THIS LINE IS MISSING
+                projectDescInput.addEventListener('input', validateFields);
+            }
+
+        }
+
+    // Show modal & disable background scroll
+    document.getElementById('confirmModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+
+
 
     viewClient(index) {
         const client = this.clients[index];
@@ -623,11 +719,11 @@ class ClientManager {
                         <input type="text" id="viewDesignation" name="designation" value="${client.designation || ''}" required>
                     </div>
                 </div>
-            </form>
-
-            <div class="sticky-submit-container">
+                 <div class="sticky-submit-container">
                 <button type="button" class="btn btn-primary" onclick="clientManager.submitViewClientChanges(${index})">Submit</button>
             </div>
+            </form>
+
         `;
 
         document.getElementById('clientviewModal').classList.add('show');

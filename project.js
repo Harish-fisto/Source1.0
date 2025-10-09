@@ -1,79 +1,264 @@
 // ============================
-// PROJECT DASHBOARD MANAGEMENT
+// ENHANCED PROJECT DASHBOARD WITH CLIENT INTEGRATION
 // ============================
 
-// Store projects data in memory
 let projectsData = [];
+let clientsData = []; // Store onboarded clients
 let currentProjectId = null;
 let currentPage = 1;
 const projectsPerPage = 10;
 
-// Sample data structure (replace with your actual data)
-const sampleProjects = [
-  {
-    id: 1,
-    name: "Hiring Platform",
-    client: "Accenture",
-    teamHead: { name: "Fisto", avatar: "https://via.placeholder.com/32" },
-    startDate: "07/10/2025",
-    deadline: "30/10/2025",
-    description: "This project aims to streamline production workflows and reduce equipment downtime in the main manufacturing unit.",
-    priority: "High",
-    initiatedBy: { name: "Anisha", avatar: "https://via.placeholder.com/40" },
-    allocatedTeam: "Software",
-    employees: [],
-    tasks: [
-      {
-        id: 1,
-        title: "Assembling motors with different parts",
-        assignedBy: { name: "Dinesh", avatar: "https://via.placeholder.com/32" },
-        assignedTo: { name: "Avinash", avatar: "https://via.placeholder.com/32" },
-        startDate: "12-08-2025",
-        endDate: "24-07-2026",
-        status: "working"
-      },
-      {
-        id: 2,
-        title: "Designing user interfaces for apps",
-        assignedBy: { name: "Dinesh", avatar: "https://via.placeholder.com/32" },
-        assignedTo: { name: "Meera", avatar: "https://via.placeholder.com/32" },
-        startDate: "15-08-2025",
-        endDate: "30-09-2026",
-        status: "done"
-      }
-    ]
-  }
-];
+// ============================
+// INITIALIZATION
+// ============================
 
-// Initialize the dashboard
 function initializeProjectDashboard() {
-  // Load projects from storage or use sample data
-  const storedProjects = getStoredProjects();
-  projectsData = storedProjects.length > 0 ? storedProjects : sampleProjects;
+  console.log('🚀 Initializing Project Dashboard...');
   
-  // Render the projects list
-  renderProjectsList();
-  
-  // Setup event listeners
-  setupEventListeners();
-}
-
-// Get projects from memory storage
-function getStoredProjects() {
-  // Since we can't use localStorage, return empty array
-  // In a real app, this would fetch from your backend
-  return [];
-}
-
-// Save projects to memory
-function saveProjects() {
-  // Store in memory only - no localStorage
-  // In a real app, this would send to your backend
-  console.log('Projects saved to memory:', projectsData);
+  // Load clients first, then projects
+  loadOnboardedClients()
+    .then(() => {
+      console.log('✅ Clients loaded, now loading projects...');
+      return loadProjects();
+    })
+    .then(() => {
+      renderProjectsList();
+      setupEventListeners();
+      console.log('✅ Project Dashboard initialized successfully');
+    })
+    .catch(err => {
+      console.error('❌ Error initializing dashboard:', err);
+    });
 }
 
 // ============================
-// PROJECTS LIST VIEW (Image 2)
+// FETCH ONBOARDED CLIENTS
+// ============================
+
+async function loadOnboardedClients() {
+  try {
+    console.log('📡 Fetching clients from API...');
+    
+    const response = await fetch('https://www.fist-o.com/web_crm/fetch_clients.php', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('📦 API Response:', result);
+
+    if (result.status === 'success') {
+      // Filter only onboarded clients
+      clientsData = result.data
+        .filter(client => {
+          const status = client.status ? client.status.toLowerCase() : '';
+          return status === 'onboard';
+        })
+        .map(client => ({
+          id: client.id,
+          customerId: client.customer_id,
+          companyName: client.company_name,
+          customerName: client.customer_name,
+          phoneNo: client.phone_number || 'N/A',
+          mailId: client.mail_id || 'N/A',
+          address: client.address || 'N/A',
+          industryType: client.industry_type || 'N/A',
+          website: client.website || 'N/A',
+          contactPerson: client.contact_person || 'N/A',
+          designation: client.designation || 'N/A'
+        }));
+      
+      console.log(`✅ Loaded ${clientsData.length} onboarded clients:`, clientsData);
+      populateClientDropdown();
+      return clientsData;
+    } else {
+      console.warn('⚠️ No clients returned or status not success');
+      return [];
+    }
+  } catch (err) {
+    console.error('❌ Error loading clients:', err);
+    showToast('Failed to load clients: ' + err.message, 'error');
+    return [];
+  }
+}
+
+// ============================
+// POPULATE CLIENT DROPDOWN
+// ============================
+
+function populateClientDropdown() {
+  const clientSelect = document.getElementById('customerId'); // Changed from 'customerId'
+  
+  if (!clientSelect) {
+    console.error('❌ Project Customer ID dropdown not found!');
+    return;
+  }
+
+  console.log('🔄 Populating dropdown with', clientsData.length, 'clients');
+
+  // Clear existing options except the first placeholder
+  clientSelect.innerHTML = '<option value="">-- Select Customer --</option>';
+  
+  if (clientsData.length === 0) {
+    const noDataOption = document.createElement('option');
+    noDataOption.value = '';
+    noDataOption.textContent = '-- No onboarded clients available --';
+    noDataOption.disabled = true;
+    clientSelect.appendChild(noDataOption);
+    console.warn('⚠️ No clients to populate in dropdown');
+    return;
+  }
+
+  clientsData.forEach((client, index) => {
+    const option = document.createElement('option');
+    option.value = client.customerId;
+    option.textContent = `${client.customerId} - ${client.customerName}`;
+    
+    // Store all client data in dataset for auto-fill
+    option.dataset.companyName = client.companyName;
+    option.dataset.customerName = client.customerName;
+    option.dataset.phone = client.phoneNo;
+    option.dataset.email = client.mailId;
+    option.dataset.contactPerson = client.contactPerson;
+    option.dataset.designation = client.designation;
+    option.dataset.industry = client.industryType;
+    option.dataset.website = client.website;
+    option.dataset.address = client.address;
+    
+    clientSelect.appendChild(option);
+    
+    if (index === 0) {
+      console.log('📝 Sample option data:', {
+        value: option.value,
+        text: option.textContent,
+        dataset: option.dataset
+      });
+    }
+  });
+  
+  console.log(`✅ Dropdown populated with ${clientsData.length} clients`);
+}
+
+// ============================
+// AUTO-FILL CONTACT DETAILS ON CLIENT SELECTION
+// ============================
+
+function handleClientSelection() {
+  const clientSelect = document.getElementById('customerId'); // Changed from 'customerId'
+  
+  if (!clientSelect) {
+    console.error('❌ Project Customer ID dropdown not found');
+    return;
+  }
+
+  const selectedValue = clientSelect.value;
+  
+  if (!selectedValue) {
+    console.log('🔄 No client selected, clearing fields');
+    clearContactFields();
+    return;
+  }
+
+  const selectedOption = clientSelect.options[clientSelect.selectedIndex];
+  console.log('👤 Client selected:', {
+    customerId: selectedValue,
+    customerName: selectedOption.dataset.customerName,
+    contactPerson: selectedOption.dataset.contactPerson,
+    phone: selectedOption.dataset.phone,
+    email: selectedOption.dataset.email,
+    designation: selectedOption.dataset.designation
+  });
+  
+  // Auto-fill contact details
+  const fields = {
+    contactPerson: selectedOption.dataset.contactPerson || '',
+    contactNumber: selectedOption.dataset.phone || '',
+    contactEmail: selectedOption.dataset.email || '',
+    contactDesignation: selectedOption.dataset.designation || ''
+  };
+
+  Object.keys(fields).forEach(fieldId => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.value = fields[fieldId];
+      element.style.backgroundColor = '#f0f0f0'; // Visual feedback
+      element.readOnly = true;
+      console.log(`✅ Set ${fieldId} = ${fields[fieldId]}`);
+    } else {
+      console.warn(`⚠️ Field ${fieldId} not found in DOM`);
+    }
+  });
+  
+  showToast(`Contact details loaded for ${selectedOption.dataset.customerName}`, 'success');
+}
+
+function clearContactFields() {
+  const fields = ['contactPerson', 'contactNumber', 'contactEmail', 'contactDesignation'];
+  
+  fields.forEach(fieldId => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.value = '';
+      element.style.backgroundColor = '';
+      element.readOnly = false;
+    }
+  });
+  
+  console.log('🧹 Contact fields cleared');
+}
+
+// ============================
+// LOAD PROJECTS
+// ============================
+
+async function loadProjects() {
+  try {
+    const response = await fetch('https://www.fist-o.com/web_crm/fetch_projects.php', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.status === 'success') {
+      projectsData = result.data.map(proj => ({
+        id: proj.id,
+        name: proj.project_name,
+        client: proj.company_name,
+        customerId: proj.customer_id,
+        customerName: proj.customer_name,
+        teamHead: { 
+          name: proj.team_head || 'N/A', 
+          avatar: 'https://via.placeholder.com/32' 
+        },
+        startDate: formatDate(proj.start_date),
+        deadline: formatDate(proj.deadline),
+        description: proj.project_description || 'N/A',
+        priority: proj.priority || 'Medium',
+        allocatedTeam: proj.allocated_team || 'N/A',
+        initiatedBy: { 
+          name: proj.initiated_by || 'N/A', 
+          avatar: 'https://via.placeholder.com/40' 
+        },
+        employees: proj.employees || [],
+        tasks: proj.tasks || []
+      }));
+      
+      console.log(`✅ Loaded ${projectsData.length} projects`);
+      renderProjectsList();
+    }
+  } catch (err) {
+    console.error('❌ Error loading projects:', err);
+    projectsData = [];
+  }
+}
+
+// ============================
+// PROJECTS LIST VIEW
 // ============================
 
 function renderProjectsList() {
@@ -82,12 +267,10 @@ function renderProjectsList() {
   
   if (!tbody) return;
   
-  // Update count
   if (projectCount) {
     projectCount.textContent = projectsData.length;
   }
   
-  // Clear existing rows
   tbody.innerHTML = '';
   
   if (projectsData.length === 0) {
@@ -105,25 +288,20 @@ function renderProjectsList() {
     return;
   }
   
-  // Calculate pagination
   const startIndex = (currentPage - 1) * projectsPerPage;
   const endIndex = startIndex + projectsPerPage;
   const paginatedProjects = projectsData.slice(startIndex, endIndex);
   
-  // Render each project
   paginatedProjects.forEach(project => {
     const row = createProjectRow(project);
     tbody.appendChild(row);
   });
   
-  // Update pagination
   updatePagination();
 }
 
 function createProjectRow(project) {
   const tr = document.createElement('tr');
-  
-  // Generate random color for project indicator
   const colors = ['#4169E1', '#DC143C', '#9ACD32', '#FF6347', '#8B4513'];
   const randomColor = colors[Math.floor(Math.random() * colors.length)];
   
@@ -149,50 +327,15 @@ function createProjectRow(project) {
     <td class="date-cell">${project.deadline || 'N/A'}</td>
     <td>
       <button class="view-btn" onclick="viewProjectDetail(${project.id})">View</button>
-      <button class="delete-btn" onclick="employeeDeleteModal(${project.id})">Delete</button>
+      <button class="delete-btn" onclick="deleteProject(${project.id})">Delete</button>
     </td>
   `;
   
   return tr;
 }
 
-function updatePagination() {
-  const totalPages = Math.ceil(projectsData.length / projectsPerPage);
-  const paginationNumbers = document.getElementById('paginationNumbers');
-  const prevBtn = document.getElementById('prevPage');
-  const nextBtn = document.getElementById('nextPage');
-  
-  if (!paginationNumbers) return;
-  
-  // Clear existing page numbers
-  paginationNumbers.innerHTML = '';
-  
-  // Create page number buttons
-  for (let i = 1; i <= totalPages; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'page-number' + (i === currentPage ? ' active' : '');
-    btn.textContent = i.toString().padStart(2, '0');
-    btn.onclick = () => goToPage(i);
-    paginationNumbers.appendChild(btn);
-  }
-  
-  // Update prev/next buttons
-  if (prevBtn) {
-    prevBtn.disabled = currentPage === 1;
-  }
-  if (nextBtn) {
-    nextBtn.disabled = currentPage === totalPages;
-  }
-}
-
-function goToPage(page) {
-  currentPage = page;
-  renderProjectsList();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
 // ============================
-// PROJECT DETAIL VIEW (Image 1)
+// PROJECT DETAIL VIEW
 // ============================
 
 function viewProjectDetail(projectId) {
@@ -204,19 +347,14 @@ function viewProjectDetail(projectId) {
     return;
   }
   
-  // Hide projects list, show detail view
   document.getElementById('projects-list-view').style.display = 'none';
   document.getElementById('project-detail-view').style.display = 'block';
   
-  // Update breadcrumb
   document.getElementById('breadcrumbProjectName').textContent = project.name;
-  
-  // Render project details
   renderProjectDetail(project);
 }
 
 function renderProjectDetail(project) {
-  // Update stats cards
   const totalTasks = project.tasks?.length || 0;
   const completedTasks = project.tasks?.filter(t => t.status === 'done').length || 0;
   const ongoingTasks = project.tasks?.filter(t => t.status === 'working').length || 0;
@@ -229,34 +367,28 @@ function renderProjectDetail(project) {
   document.getElementById('delayedTasksCount').textContent = '0';
   document.getElementById('overdueTasksCount').textContent = '0';
   
-  // Update project info
   document.getElementById('projectNameTitle').textContent = project.name;
   document.getElementById('projectDescription').textContent = project.description || 'No description available.';
   document.getElementById('projectPriority').textContent = project.priority || 'Medium';
   
-  // Update initiator info
   if (project.initiatedBy) {
     document.getElementById('initiatorName').textContent = project.initiatedBy.name;
     document.getElementById('initiatorAvatar').src = project.initiatedBy.avatar;
   }
   
-  // Update team head info
   if (project.teamHead) {
     document.getElementById('teamHeadName').textContent = project.teamHead.name;
     document.getElementById('teamHeadAvatar').src = project.teamHead.avatar;
   }
   
-  // Update dates
   document.getElementById('projectStartDate').textContent = project.startDate || 'N/A';
   document.getElementById('projectDeadlineDate').textContent = project.deadline || 'N/A';
   
-  // Render tasks table
   renderProjectTasks(project.tasks || []);
 }
 
 function renderProjectTasks(tasks) {
   const tbody = document.getElementById('projectTasksTableBody');
-  
   if (!tbody) return;
   
   tbody.innerHTML = '';
@@ -326,25 +458,123 @@ function showProjectsList() {
 }
 
 // ============================
-// TAB SWITCHING
+// ADD NEW PROJECT
+// ============================
+
+function openProjectForm() {
+  console.log('📝 Opening project form...');
+  
+  const modal = document.getElementById('addProjectModal');
+  if (modal) {
+    modal.style.display = 'block';
+    
+    const form = document.getElementById('projectForm');
+    if (form) form.reset();
+    
+    clearContactFields();
+    
+    // Re-populate dropdown in case it was cleared
+    if (clientsData.length > 0) {
+      populateClientDropdown();
+    } else {
+      console.warn('⚠️ No clients data available, attempting to reload...');
+      loadOnboardedClients();
+    }
+  }
+}
+
+function closeProjectForm() {
+  const modal = document.getElementById('addProjectModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+async function handleProjectFormSubmit(e) {
+  e.preventDefault();
+  
+  const customerId = document.getElementById('customerId')?.value; // Changed from 'customerId'
+  if (!customerId) {
+    showToast('Please select a client', 'error');
+    return;
+  }
+  
+  const client = clientsData.find(c => c.customerId === customerId);
+  
+  const projectData = {
+    customer_id: customerId,
+    company_name: client?.companyName || '',
+    customer_name: client?.customerName || '',
+    project_name: document.getElementById('projectName')?.value,
+    project_description: document.getElementById('specification')?.value,
+    contact_person: document.getElementById('contactPerson')?.value,
+    contact_number: document.getElementById('contactNumber')?.value,
+    contact_email: document.getElementById('contactEmail')?.value,
+    contact_designation: document.getElementById('contactDesignation')?.value,
+    start_date: document.getElementById('date')?.value,
+    deadline: document.getElementById('deadline')?.value,
+    team_head: document.getElementById('reportingPerson')?.value,
+    allocated_team: document.getElementById('allocatedTeam')?.value,
+    remarks: document.getElementById('projectremarks')?.value
+  };
+  
+  console.log('📤 Submitting project data:', projectData);
+  
+  try {
+    const response = await fetch('https://www.fist-o.com/web_crm/create_project.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(projectData)
+    });
+
+    const result = await response.json();
+
+    if (response.ok && result.success) {
+      await loadProjects();
+      closeProjectForm();
+      showToast('Project created successfully!', 'success');
+    } else {
+      showToast(result.message || 'Failed to create project', 'error');
+    }
+  } catch (err) {
+    showToast('Network error while creating project', 'error');
+    console.error('Error:', err);
+  }
+}
+
+// ============================
+// EVENT LISTENERS
 // ============================
 
 function setupEventListeners() {
+  console.log('🔗 Setting up event listeners...');
+  
+  // Client selection change - AUTO-FILL TRIGGER
+  const clientSelect = document.getElementById('customerId'); // Changed from 'customerId'
+  if (clientSelect) {
+    // Remove any existing listeners
+    clientSelect.removeEventListener('change', handleClientSelection);
+    // Add new listener
+    clientSelect.addEventListener('change', handleClientSelection);
+    console.log('✅ Client selection listener attached');
+  } else {
+    console.warn('⚠️ Project Customer ID dropdown not found during setup');
+  }
+  
+  // Project form submission
+  const projectForm = document.getElementById('projectForm');
+  if (projectForm) {
+    projectForm.removeEventListener('submit', handleProjectFormSubmit);
+    projectForm.addEventListener('submit', handleProjectFormSubmit);
+    console.log('✅ Project form submission listener attached');
+  }
+  
   // Detail view tabs
   const detailTabs = document.querySelectorAll('.detail-tab');
   detailTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const tabName = tab.getAttribute('data-tab');
       switchDetailTab(tabName);
-    });
-  });
-  
-  // View toggles (Timeline/List)
-  const viewToggles = document.querySelectorAll('.view-toggle-btn');
-  viewToggles.forEach(toggle => {
-    toggle.addEventListener('click', () => {
-      viewToggles.forEach(t => t.classList.remove('active'));
-      toggle.classList.add('active');
     });
   });
   
@@ -356,321 +586,24 @@ function setupEventListeners() {
     });
   }
   
-  // Pagination buttons
+  // Pagination
   const prevBtn = document.getElementById('prevPage');
   const nextBtn = document.getElementById('nextPage');
   
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      if (currentPage > 1) {
-        goToPage(currentPage - 1);
-      }
+      if (currentPage > 1) goToPage(currentPage - 1);
     });
   }
   
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
       const totalPages = Math.ceil(projectsData.length / projectsPerPage);
-      if (currentPage < totalPages) {
-        goToPage(currentPage + 1);
-      }
+      if (currentPage < totalPages) goToPage(currentPage + 1);
     });
   }
-}
-
-function switchDetailTab(tabName) {
-  // Update tab buttons
-  document.querySelectorAll('.detail-tab').forEach(tab => {
-    tab.classList.remove('active');
-    if (tab.getAttribute('data-tab') === tabName) {
-      tab.classList.add('active');
-    }
-  });
   
-  // Update tab panels
-  document.querySelectorAll('.tab-panel').forEach(panel => {
-    panel.classList.remove('active');
-  });
-  
-  const activePanel = document.getElementById(`${tabName}-panel`);
-  if (activePanel) {
-    activePanel.classList.add('active');
-  }
-}
-
-// ============================
-// SEARCH AND FILTER
-// ============================
-
-function filterProjects(searchTerm) {
-  const filtered = projectsData.filter(project => {
-    return project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           (project.client && project.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
-           (project.teamHead?.name && project.teamHead.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  });
-  
-  // Temporarily replace projectsData for rendering
-  const originalData = [...projectsData];
-  projectsData = filtered;
-  currentPage = 1;
-  renderProjectsList();
-  projectsData = originalData;
-}
-
-
-// ============================
-// ADD NEW PROJECT
-// ============================
-
-function openProjectForm() {
-  const modal = document.getElementById('addProjectModal');
-  if (modal) {
-    modal.style.display = 'block';
-  }
-}
-
-function closeProjectForm() {
-  const modal = document.getElementById('addProjectModal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
-}
-
-// Handle project form submission
-function handleProjectFormSubmit(formData) {
-  const newProject = {
-    id: projectsData.length + 1,
-    name: formData.projectName,
-    client: formData.customerId,
-    teamHead: { name: formData.reportingPerson, avatar: 'https://via.placeholder.com/32' },
-    startDate: formatDate(formData.date),
-    deadline: formatDate(formData.deadline),
-    description: formData.specification,
-    priority: 'Medium',
-    initiatedBy: { name: 'Current User', avatar: 'https://via.placeholder.com/40' },
-    allocatedTeam: formData.allocatedTeam,
-    employees: [],
-    tasks: []
-  };
-  
-  projectsData.push(newProject);
-  saveProjects();
-  renderProjectsList();
-  closeProjectForm();
-  
-  showToast('Project created successfully!', 'success');
-}
-
-// ============================
-// TASK ALLOCATION MODAL FUNCTIONS
-// ============================
-
-// Function to open Task Allocation Modal
-function openTaskAllocationForm() {
-  const modal = document.getElementById('addTaskAllocationModal');
-  const form = document.getElementById('TaskAllocationForm');
-  
-  if (modal) {
-    modal.style.display = 'block';
-    
-    // Reset form if it exists
-    if (form) {
-      form.reset();
-    }
-    
-    // If we're in a project detail view, pre-fill project info
-    if (currentProjectId) {
-      const project = projectsData.find(p => p.id === currentProjectId);
-      if (project) {
-        // You can pre-fill any project-specific information here
-        console.log('Adding task to project:', project.name);
-      }
-    }
-  }
-}
-
-// Function to close Task Allocation Modal
-function closeTaskAllocationForm() {
-  console.log('closeTaskAllocationForm called');
-  const modal = document.getElementById('addTaskAllocationModal');
-  if (modal) {
-    modal.style.display = 'none';
-    console.log('Modal hidden');
-    
-    // Reset the form
-    const form = document.getElementById('TaskAllocationForm');
-    if (form) {
-      form.reset();
-    }
-  } else {
-    console.error('Modal element not found');
-  }
-}
-
-// ============================
-// FORM SUBMISSION HANDLERS
-// ============================
-
-document.addEventListener('DOMContentLoaded', function() {
-  
-  // Handle Task Allocation Form Submission
-  
-  if (taskForm) {
-    taskForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      // Validate form
-      if (!taskForm.checkValidity()) {
-        taskForm.reportValidity();
-        return;
-      }
-      
-      // Collect form data
-      const formData = {
-        id: Date.now(), // Generate unique ID
-        title: document.getElementById('taskTitle').value.trim(),
-        assignedBy: {
-          name: document.getElementById('taskAssignedBy').value.trim(),
-          avatar: 'https://via.placeholder.com/32'
-        },
-        assignedTo: {
-          name: document.getElementById('taskAssignedTo').value,
-          avatar: 'https://via.placeholder.com/32'
-        },
-        startDate: formatDate(document.getElementById('taskStartDate').value),
-        endDate: formatDate(document.getElementById('taskEndDate').value),
-        status: document.getElementById('taskStatus').value,
-        description: document.getElementById('taskDescription').value.trim()
-      };
-      
-      console.log('Task Allocation Data:', formData);
-      
-      // If we're in a project detail view, add task to that project
-      if (currentProjectId) {
-        const project = projectsData.find(p => p.id === currentProjectId);
-        if (project) {
-          if (!project.tasks) {
-            project.tasks = [];
-          }
-          project.tasks.push(formData);
-          
-          // Save and re-render
-          saveProjects();
-          renderProjectDetail(project);
-          
-          showToast('Task added successfully!', 'success');
-        }
-      } else {
-        showToast('Task created successfully!', 'success');
-      }
-      
-      // Close modal and reset form
-      closeTaskAllocationForm();
-    });
-  }
-});
-
-// ============================
-// PROJECT ALLOCATION MODAL FUNCTIONS
-// ============================
-
-// Function to open Project Allocation Modal
-function openProjectAllocationForm() {
-  const modal = document.getElementById('addProjectAllocationModal');
-  
-  if (!modal) {
-    console.error('Project Allocation Modal not found');
-    showToast('Modal not found. Please check the HTML structure.', 'error');
-    return;
-  }
-  
-  if (!currentProjectId) {
-    showToast('No project selected', 'error');
-    return;
-  }
-  
-  const project = projectsData.find(p => p.id === currentProjectId);
-  if (!project) {
-    showToast('Project not found', 'error');
-    return;
-  }
-  
-  // Show the modal
-  modal.style.display = 'block';
-  
-  // Pre-fill project information
-  const allocProjectName = document.getElementById('allocProjectName');
-  const allocStartDate = document.getElementById('allocStartDate');
-  const allocDeadline = document.getElementById('allocDeadline');
-  const allocProjectDescription = document.getElementById('allocProjectDescription');
-  
-  if (allocProjectName) allocProjectName.value = project.name;
-  if (allocStartDate) allocStartDate.value = project.startDate ? convertDateFormat(project.startDate) : '';
-  if (allocDeadline) allocDeadline.value = project.deadline ? convertDateFormat(project.deadline) : '';
-  if (allocProjectDescription) allocProjectDescription.value = project.description || '';
-}
-
-// Function to close Project Allocation Modal
-function closeProjectAllocationForm() {
-  const modal = document.getElementById('addProjectAllocationModal');
-  if (modal) {
-    modal.style.display = 'none';
-    
-    // Reset the form
-    const form = document.getElementById('allocationForm');
-    if (form) {
-      form.reset();
-    }
-  }
-}
-
-// Handle Project Allocation Form Submission
-function handleProjectAllocationSubmit(e) {
-  e.preventDefault();
-  
-  if (!currentProjectId) {
-    showToast('No project selected', 'error');
-    return;
-  }
-  
-  const project = projectsData.find(p => p.id === currentProjectId);
-  if (!project) {
-    showToast('Project not found', 'error');
-    return;
-  }
-  
-  // Collect form data
-  const employeeName = document.getElementById('allocAssignedTo')?.value;
-  const startDate = document.getElementById('allocStartDate')?.value;
-  const deadline = document.getElementById('allocDeadline')?.value;
-  const remarks = document.getElementById('allocRemarks')?.value;
-  
-  if (!employeeName) {
-    showToast('Please select an employee', 'error');
-    return;
-  }
-  
-  // Add employee to project
-  if (!project.employees) {
-    project.employees = [];
-  }
-  
-  const newEmployee = {
-    name: employeeName,
-    avatar: 'https://via.placeholder.com/40',
-    startDate: startDate ? formatDate(startDate) : project.startDate,
-    deadline: deadline ? formatDate(deadline) : project.deadline,
-    remarks: remarks || ''
-  };
-  
-  project.employees.push(newEmployee);
-  
-  // Save and refresh
-  saveProjects();
-  renderProjectDetail(project);
-  closeProjectAllocationForm();
-  
-  showToast('Employee allocated successfully!', 'success');
+  console.log('✅ Event listeners setup complete');
 }
 
 // ============================
@@ -686,23 +619,95 @@ function formatDate(dateString) {
   return `${day}/${month}/${year}`;
 }
 
+function updatePagination() {
+  const totalPages = Math.ceil(projectsData.length / projectsPerPage);
+  const paginationNumbers = document.getElementById('paginationNumbers');
+  const prevBtn = document.getElementById('prevPage');
+  const nextBtn = document.getElementById('nextPage');
+  
+  if (!paginationNumbers) return;
+  
+  paginationNumbers.innerHTML = '';
+  
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'page-number' + (i === currentPage ? ' active' : '');
+    btn.textContent = i.toString().padStart(2, '0');
+    btn.onclick = () => goToPage(i);
+    paginationNumbers.appendChild(btn);
+  }
+  
+  if (prevBtn) prevBtn.disabled = currentPage === 1;
+  if (nextBtn) nextBtn.disabled = currentPage === totalPages;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderProjectsList();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function switchDetailTab(tabName) {
+  document.querySelectorAll('.detail-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.getAttribute('data-tab') === tabName) {
+      tab.classList.add('active');
+    }
+  });
+  
+  document.querySelectorAll('.tab-panel').forEach(panel => {
+    panel.classList.remove('active');
+  });
+  
+  const activePanel = document.getElementById(`${tabName}-panel`);
+  if (activePanel) activePanel.classList.add('active');
+}
+
+function filterProjects(searchTerm) {
+  const filtered = projectsData.filter(project => {
+    return project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (project.client && project.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
+           (project.teamHead?.name && project.teamHead.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  });
+  
+  const originalData = [...projectsData];
+  projectsData = filtered;
+  currentPage = 1;
+  renderProjectsList();
+  projectsData = originalData;
+}
+
 function showToast(message, type = 'success') {
-  const container = document.getElementById('projectToastContainer');
-  if (!container) return;
+  const container = document.getElementById('projectToastContainer') || document.getElementById('toastContainer');
+  if (!container) {
+    console.log('📢 Toast:', message);
+    return;
+  }
   
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   container.appendChild(toast);
   
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 100);
-  
+  setTimeout(() => toast.classList.add('show'), 100);
   setTimeout(() => {
     toast.classList.remove('show');
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+function openTaskAllocationForm() {
+  const modal = document.getElementById('addTaskAllocationModal');
+  if (modal) {
+    modal.style.display = 'block';
+  }
+}
+
+function closeTaskAllocationForm() {
+  const modal = document.getElementById('addTaskAllocationModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
 }
 
 // ============================
@@ -710,11 +715,19 @@ function showToast(message, type = 'success') {
 // ============================
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('🎬 DOM Content Loaded - Starting initialization');
   initializeProjectDashboard();
 });
 
-// Export functions for use in other files
+// ============================
+// EXPORT FUNCTIONS FOR GLOBAL ACCESS
+// ============================
+
 window.viewProjectDetail = viewProjectDetail;
 window.showProjectsList = showProjectsList;
 window.openProjectForm = openProjectForm;
 window.closeProjectForm = closeProjectForm;
+window.openTaskAllocationForm = openTaskAllocationForm;
+window.closeTaskAllocationForm = closeTaskAllocationForm;
+window.handleClientSelection = handleClientSelection;
+window.loadOnboardedClients = loadOnboardedClients;
