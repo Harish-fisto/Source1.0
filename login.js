@@ -14,12 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = passwordField?.value.trim();
 
     if (!empId || !password) {
+<<<<<<< HEAD
       showAlert("Please enter both Employee ID and password", "error");
       return;
     }
 
     const submitButton = loginForm.querySelector('button[type="submit"]') || 
                          document.querySelector('.login-btn');
+=======
+      // showAlert("Please enter both Employee ID and password", "error");
+      return;
+    }
+
+    const submitButton = loginForm.querySelector('button[type="submit"]');
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     if (!submitButton || submitButton.disabled) return;
 
     const originalText = submitButton.textContent;
@@ -59,6 +67,10 @@ document.addEventListener("DOMContentLoaded", () => {
         sessionStorage.setItem("gender", user.gender);
         sessionStorage.setItem("phone", user.Phone);
         sessionStorage.setItem("loginTime", new Date().toISOString());
+<<<<<<< HEAD
+=======
+
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         sessionStorage.setItem("currentUser", JSON.stringify(user));
 
         showAlert("Login successful! Redirecting...", "success");
@@ -80,8 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Password toggle
   if (passwordField && toggleButton) {
     passwordField.type = "password";
+<<<<<<< HEAD
     if (eyeIcon) eyeIcon.style.display = "none";
     if (eyeOffIcon) eyeOffIcon.style.display = "block";
+=======
+    eyeIcon && (eyeIcon.style.display = "none");
+    eyeOffIcon && (eyeOffIcon.style.display = "block");
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 
     toggleButton.addEventListener("click", () => {
       const isPassword = passwordField.type === "password";
@@ -150,4 +167,8 @@ function showAlert(message, type = "info") {
     alert.style.opacity = '0';
     setTimeout(() => alert.remove(), 300);
   }, 4000);
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27

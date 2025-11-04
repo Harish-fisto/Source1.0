@@ -1,6 +1,13 @@
 // Utility functions and helpers
 // utilities.js
 
+<<<<<<< HEAD
+=======
+// Utility functions
+// Utility functions and helpers
+// utilities.js
+
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // ---------------------- IST TIME UTILITY ----------------------
 
 /**
@@ -9,8 +16,13 @@
  */
 function getISTDate() {
     const now = new Date();
+<<<<<<< HEAD
     const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
     const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+=======
+    const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000); // Convert to UTC
+    const IST_OFFSET = 5.5 * 60 * 60 * 1000; // +5:30 in ms
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     return new Date(utcMs + IST_OFFSET);
 }
 
@@ -27,7 +39,11 @@ function getFormattedISTDate() {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
+<<<<<<< HEAD
         hour12: true,
+=======
+        hour12: false,
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     };
     return istDate.toLocaleString('en-IN', options);
 }
@@ -60,6 +76,7 @@ function showNotification(message, type = 'success') {
 }
 
 // ---------------------- DASHBOARD TIME DISPLAY ----------------------
+<<<<<<< HEAD
 (function() {
     // Private variables - won't conflict with other scripts
     let serverTimeOffset = 0;
@@ -197,6 +214,47 @@ function showNotification(message, type = 'success') {
 
 // ---------------------- ANIMATION ----------------------
 
+=======
+async function updateDateTime() {
+    const dateTimeElement = document.getElementById('dateTimeDisplay');
+    if (!dateTimeElement) return;
+
+    try {
+        const response = await fetch("https://www.fist-o.com/web_crm/timedisplay.php");
+        const data = await response.json();
+
+        // Convert "YYYY-MM-DD HH:MM:SS" into a valid Date object
+        const serverTime = new Date(data.time.replace(" ", "T"));
+
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        };
+
+        dateTimeElement.textContent = serverTime.toLocaleString('en-IN', options);
+
+    } catch (error) {
+        console.error("❌ Failed to fetch server time for dashboard:", error);
+        dateTimeElement.textContent = "Error loading time";
+    }
+}
+
+// Initialize when page loads
+document.addEventListener("DOMContentLoaded", () => {
+    updateDateTime(); // show once
+});
+
+
+
+
+// Animation
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 function initializeCardAnimations() {
     const cards = document.querySelectorAll('.dashboard-card');
 
@@ -214,8 +272,12 @@ function initializeCardAnimations() {
     });
 }
 
+<<<<<<< HEAD
 // ---------------------- CHART ----------------------
 
+=======
+// Chart
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 function createPieChart(ctx, labels, data, colors) {
     return new Chart(ctx, {
         type: 'pie',
@@ -244,8 +306,12 @@ function createPieChart(ctx, labels, data, colors) {
     });
 }
 
+<<<<<<< HEAD
 // ---------------------- PASSWORD TOGGLE ----------------------
 
+=======
+// Password Toggle
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -264,8 +330,12 @@ function togglePassword(inputId) {
     }
 }
 
+<<<<<<< HEAD
 // ---------------------- FILE UPLOAD HANDLING ----------------------
 
+=======
+// File Upload Handling
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 function handleFileChange(event, index) {
     const file = event.target.files[0];
     const card = event.target.closest('.upload-card');
@@ -329,8 +399,12 @@ function removeFile(index) {
     uploadIcon.className = defaultIcons[cardType];
 }
 
+<<<<<<< HEAD
 // ---------------------- DEVICE DETECTION ----------------------
 
+=======
+// Device detection
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 function detectDevice() {
     const userAgent = navigator.userAgent.toLowerCase();
     if (userAgent.includes('mobile') || userAgent.includes('android') || userAgent.includes('iphone')) {
@@ -351,8 +425,12 @@ function getDeviceIcon(device) {
     }
 }
 
+<<<<<<< HEAD
 // ---------------------- REPORT FILTERING ----------------------
 
+=======
+// Report Filtering
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 function filterByDate() {
     const inputDate = document.getElementById("reportDate").value;
     const table = document.getElementById("reportsTable");
@@ -371,8 +449,12 @@ function filterByDate() {
     }
 }
 
+<<<<<<< HEAD
 // ---------------------- MESSAGE DISPLAY ----------------------
 
+=======
+// Message display
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 function showMessage(message, type = 'success') {
     const messageArea = document.getElementById('messageArea');
     if (messageArea) {
@@ -383,13 +465,20 @@ function showMessage(message, type = 'success') {
     }
 }
 
+<<<<<<< HEAD
 // ---------------------- EXPORTS ----------------------
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // Export for CommonJS modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         formatDate,
         showNotification,
+<<<<<<< HEAD
+=======
+        updateDateTime,
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         initializeCardAnimations,
         createPieChart,
         togglePassword,
@@ -407,6 +496,10 @@ if (typeof module !== 'undefined' && module.exports) {
 // Make functions globally accessible in browser
 window.formatDate = formatDate;
 window.showNotification = showNotification;
+<<<<<<< HEAD
+=======
+window.updateDateTime = updateDateTime;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 window.initializeCardAnimations = initializeCardAnimations;
 window.createPieChart = createPieChart;
 window.togglePassword = togglePassword;

@@ -532,12 +532,19 @@ body {
 .reports-table th:nth-child(1), .reports-table td:nth-child(1) { width: 12%; }
 .reports-table th:nth-child(2), .reports-table td:nth-child(2) { width: 15%; }
 .reports-table th:nth-child(3), .reports-table td:nth-child(3) { width: 15%; }
+<<<<<<< HEAD
 .reports-table th:nth-child(4), .reports-table td:nth-child(4) { width: 12%; }
 .reports-table th:nth-child(5), .reports-table td:nth-child(5) { width: 12%; }
 .reports-table th:nth-child(6), .reports-table td:nth-child(6) { width: 12%; }
 .reports-table th:nth-child(7), .reports-table td:nth-child(7) { width: 20%; }
 .reports-table th:nth-child(8), .reports-table td:nth-child(8) { width: 15%; }
 .reports-table th:nth-child(9), .reports-table td:nth-child(9) { width: 15%; }
+=======
+.reports-table th:nth-child(4), .reports-table td:nth-child(4) { width: 10%; }
+.reports-table th:nth-child(5), .reports-table td:nth-child(5) { width: 8%; }
+.reports-table th:nth-child(6), .reports-table td:nth-child(6) { width: 20%; }
+.reports-table th:nth-child(7), .reports-table td:nth-child(7) { width: 20%; }
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 
 /* --- END OF REPORTS AND SPECIAL PAGE FIXES --- */
 
@@ -974,7 +981,11 @@ body {
     border-radius: 8px;
     display: inline-block;
     font-weight: 500;
+<<<<<<< HEAD
     /* margin-top: 1rem; */
+=======
+    margin-top: 1rem;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 }
 
 .status-progress {
@@ -1214,6 +1225,7 @@ body {
     margin: 0;
 }
 
+<<<<<<< HEAD
 .attendance-radio-group {
     display: flex;
     gap: 1.5rem;
@@ -1236,6 +1248,8 @@ body {
     margin: 0;
 }
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 /* Intern date alignment - Fixed version */
 #intern-area .form-row:first-child {
     display: flex;
@@ -1456,6 +1470,7 @@ body {
     display: flex;
     gap: 0.5rem;
 }
+<<<<<<< HEAD
 .employees-avatars {
   display: flex;
   align-items: center;
@@ -1503,6 +1518,8 @@ body {
     color: white;
     font-size: 0.75rem;
 }
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 
 /* Tab Navigation */
 .tabs-container {
@@ -1967,7 +1984,11 @@ body:not(.modal-open) .container {
     border-bottom: 1px solid #e5e7eb;
     background: linear-gradient(0deg, #161616 5%, #5f5f5ff2 90%);
     color: white;
+<<<<<<< HEAD
     border-radius: 0px 0Px 0 0;
+=======
+    border-radius: 20px 20px 0 0;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     flex-shrink: 0; /* Prevent header from shrinking */
 }
 
@@ -3661,7 +3682,11 @@ ease;
 }
 
 /* Sticky modal header */
+<<<<<<< HEAD
 .clientmodal-header-clientdelete {
+=======
+.clientmodal-header-client {
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #ccc;
   position: sticky;
@@ -3786,8 +3811,11 @@ ease;
   transition: all 0.2s ease;
 } */
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 /* Status badge styling */
 .status-badge {
   padding: 4px 8px;
@@ -4036,7 +4064,11 @@ ease;
     transition: all 0.3s 
 ease;
     display: block;
+<<<<<<< HEAD
     /* margin: 30px auto 0; */
+=======
+    margin: 30px auto 0;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     min-width: 200px;
 }
 
@@ -4423,6 +4455,7 @@ ease;
   box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
 }
 
+<<<<<<< HEAD
 /* ============================
    SIMPLE EMPLOYEE CARDS IN MODAL - MATCHING SCREENSHOT
    ============================ */
@@ -4819,6 +4852,8 @@ ease;
 
 
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 /* Modern Projects Table */
 .projects-table-wrapper {
   background: white;
@@ -4892,6 +4927,7 @@ ease;
 }
 
 /* Progress Bar */
+<<<<<<< HEAD
 /* Progress Bar Fix */
 .progress-container {
   display: flex;
@@ -4905,11 +4941,24 @@ ease;
   width: 120px;
   height: 8px;
   background: #e0e0e0;
+=======
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar-wrapper {
+  flex: 1;
+  height: 8px;
+  background: #f0f0f0;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
   border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
+<<<<<<< HEAD
   height: 100%;
   transition: all 0.3s ease;
   border-radius: 4px;
@@ -4923,6 +4972,14 @@ ease;
 }
 
 
+=======
+    height: 100%;
+    background: black;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 .progress-percentage {
   font-size: 13px;
   font-weight: 500;
@@ -5053,6 +5110,7 @@ ease;
     color: white;
 }
 /* ============================
+<<<<<<< HEAD
    VIEW EMPLOYEES BUTTON - Black Style to Match Your Design
    ============================ */
 
@@ -6201,6 +6259,8 @@ textarea { min-height: 40px; }
 
 
 /* ============================
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
    PROJECT DETAIL VIEW (Image 1)
    ============================ */
 
@@ -6308,7 +6368,10 @@ textarea { min-height: 40px; }
 }
 
 /* Stats Grid */
+<<<<<<< HEAD
 /* Stats Grid */
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -6335,13 +6398,20 @@ textarea { min-height: 40px; }
 .projectstat-icon {
   width: 48px;
   height: 48px;
+<<<<<<< HEAD
+=======
+     background: linear-gradient(111deg, #161616 5%, #5f5f5ff2 90%);
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 20px;
+<<<<<<< HEAD
   flex-shrink: 0;
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 }
 
 .stat-info {
@@ -6352,6 +6422,10 @@ textarea { min-height: 40px; }
 .stat-value {
   font-size: 28px;
   font-weight: 700;
+<<<<<<< HEAD
+=======
+  color: #1a1a1a;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
   line-height: 1;
   margin-bottom: 4px;
 }
@@ -6359,6 +6433,7 @@ textarea { min-height: 40px; }
 .stat-label {
   font-size: 13px;
   color: #666;
+<<<<<<< HEAD
   font-weight: 500;
 }
 
@@ -6417,6 +6492,10 @@ textarea { min-height: 40px; }
 }
 
 
+=======
+}
+
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 /* Project Info Section */
 .project-info-section {
   background: white;
@@ -6484,6 +6563,7 @@ textarea { min-height: 40px; }
   align-items: flex-start;
 }
 
+<<<<<<< HEAD
 /* Meta card for employees section */
 .meta-card.employees h4 {
     font-size: 1rem;
@@ -6491,6 +6571,15 @@ textarea { min-height: 40px; }
     margin-bottom: 12px;
     color: #1F2937;
 }
+=======
+.meta-card.employees h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 .meta-avatar {
   width: 48px;
   height: 48px;
@@ -6499,7 +6588,11 @@ textarea { min-height: 40px; }
   position: relative;
 }
 
+<<<<<<< HEAD
 /* .meta-avatar.crown::before {
+=======
+.meta-avatar.crown::before {
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
   content: '\f521';
   font-family: 'Font Awesome 5 Free';
   font-weight: 900;
@@ -6510,7 +6603,11 @@ textarea { min-height: 40px; }
   color: #FFD700;
   font-size: 20px;
   z-index: 1;
+<<<<<<< HEAD
 } */
+=======
+}
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 
 .meta-avatar img {
   width: 100%;
@@ -6537,6 +6634,7 @@ textarea { min-height: 40px; }
 .employees-avatars {
   display: flex;
   align-items: center;
+<<<<<<< HEAD
   gap: 12px;
 }
 
@@ -6554,6 +6652,24 @@ textarea { min-height: 40px; }
     font-size: 14px;
     padding: 10px 32px;
     transition: all 0.3s ease;
+=======
+  gap: 8px;
+}
+
+.add-employee-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.3s ease;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 }
 
 .add-employee-btn:hover {
@@ -6849,6 +6965,7 @@ textarea { min-height: 40px; }
     font-size: 12px;
   }
 }
+<<<<<<< HEAD
 
 /* ============================
    RESOURCES TAB STYLES
@@ -7652,6 +7769,8 @@ textarea { min-height: 40px; }
   animation: slideUp 0.4s ease;
 }
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 /* real project css */
 
 .header-project {
@@ -7911,7 +8030,11 @@ ease;
     border-left: 1px solid #000000;
     /* Adds | and - borders */
     padding: 8px 12px;
+<<<<<<< HEAD
     text-align: center;
+=======
+    text-align: left;
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 }
 
 .temp-table td {
@@ -8270,6 +8393,7 @@ ease;
     padding: 1.5rem;
 }
 
+<<<<<<< HEAD
 /* Project Table Styles */
 .project-table {
   width: 100%;
@@ -8575,6 +8699,8 @@ ease;
     display: none;
   }
 }
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 .projectmodal-header {
     display: flex;
     justify-content: space-between;
@@ -9299,6 +9425,7 @@ body.modal-open {
     }
 }
 
+<<<<<<< HEAD
 /* ============================================
    REPORT MODAL - HORIZONTAL LAYOUT
    ============================================ */
@@ -9555,4 +9682,6 @@ body.modal-open {
 }
 
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 

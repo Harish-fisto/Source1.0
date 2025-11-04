@@ -393,6 +393,7 @@ function calculateLeaveDuration() {
 function handleLeaveApplicationSubmit(event) {
     event.preventDefault();
     
+<<<<<<< HEAD
     const leaveType = document.getElementById('leaveType');
     const numberOfDays = document.getElementById('numberOfDays');
     const reason = document.getElementById('leaveReason');
@@ -403,6 +404,13 @@ function handleLeaveApplicationSubmit(event) {
     }
     
     if (!leaveType.value || !numberOfDays.value || !reason.value.trim()) {
+=======
+    const leaveType = document.getElementById('leaveType').value;
+    const numberOfDays = document.getElementById('numberOfDays').value;
+    const reason = document.getElementById('leaveReason').value;
+    
+    if (!leaveType || !numberOfDays || !reason.trim()) {
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         showMessage('Please fill all required fields', 'error');
         return;
     }
@@ -412,6 +420,7 @@ function handleLeaveApplicationSubmit(event) {
     let duration = 0;
     let halfDayPeriod = '';
     
+<<<<<<< HEAD
     // Helper function to format date as YYYY-MM-DD
     function formatDate(dateInput) {
         if (!dateInput) return '';
@@ -449,6 +458,22 @@ function handleLeaveApplicationSubmit(event) {
         
         // Validate half-day period selection
         if (numberOfDays.value === 'halfday') {
+=======
+    // Process different leave duration types
+    if (numberOfDays === 'halfday' || numberOfDays === '1') {
+        // Half-day or 1-day leave
+        const singleDateField = document.getElementById('singleDate');
+        if (!singleDateField.value) {
+            showMessage('Please select leave date', 'error');
+            return;
+        }
+        
+        startDate = singleDateField.value;
+        endDate = startDate;
+        duration = parseFloat(numberOfDays);
+        
+        if (numberOfDays === 'halfday') {
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
             const period = document.querySelector('input[name="halfDayPeriod"]:checked');
             if (!period) {
                 showMessage('Please select Morning or Afternoon for half-day leave', 'error');
@@ -456,6 +481,7 @@ function handleLeaveApplicationSubmit(event) {
             }
             halfDayPeriod = period.value;
         }
+<<<<<<< HEAD
         
         console.log('Single day leave - from_date and to_date are the same:', {
             from_date: startDate,
@@ -465,15 +491,22 @@ function handleLeaveApplicationSubmit(event) {
         
     } else if (numberOfDays.value === 'custom') {
         // Custom duration handling
+=======
+    } else if (numberOfDays === 'custom') {
+        // Custom duration with date range
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         const startDateField = document.getElementById('startDate');
         const endDateField = document.getElementById('endDate');
         const customDurationField = document.getElementById('customDuration');
         
+<<<<<<< HEAD
         if (!startDateField || !endDateField || !customDurationField) {
             showMessage('Date fields not found', 'error');
             return;
         }
         
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         if (!startDateField.value || !endDateField.value || !customDurationField.value) {
             showMessage('Please fill all date and duration fields for custom leave', 'error');
             return;
@@ -485,6 +518,7 @@ function handleLeaveApplicationSubmit(event) {
             return;
         }
         
+<<<<<<< HEAD
         startDate = formatDate(startDateField.value);
         endDate = formatDate(endDateField.value);
         
@@ -504,12 +538,32 @@ function handleLeaveApplicationSubmit(event) {
             showMessage('Date fields not found', 'error');
             return;
         }
+=======
+        startDate = startDateField.value;
+        endDate = endDateField.value;
+        duration = customValue;
+        
+        // Validate that dates match custom duration
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const calculatedDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24)) + 1;
+        
+        if (calculatedDays !== duration) {
+            showMessage(`Date range (${calculatedDays} days) doesn't match entered duration (${duration} days). Please adjust.`, 'error');
+            return;
+        }
+    } else {
+        // Standard multi-day leave (2-5 days)
+        const startDateField = document.getElementById('startDate');
+        const endDateField = document.getElementById('endDate');
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         
         if (!startDateField.value || !endDateField.value) {
             showMessage('Please select both start and end dates', 'error');
             return;
         }
         
+<<<<<<< HEAD
         startDate = formatDate(startDateField.value);
         endDate = formatDate(endDateField.value);
         
@@ -520,6 +574,13 @@ function handleLeaveApplicationSubmit(event) {
         
         const start = new Date(startDateField.value);
         const end = new Date(endDateField.value);
+=======
+        startDate = startDateField.value;
+        endDate = endDateField.value;
+        
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         const timeDiff = end.getTime() - start.getTime();
         const calculatedDuration = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
         
@@ -529,21 +590,35 @@ function handleLeaveApplicationSubmit(event) {
         }
         
         duration = calculatedDuration;
+<<<<<<< HEAD
     }
     
     // Final validation
     if (!startDate || !endDate) {
         showMessage('Error: Could not format dates properly. Please try again.', 'error');
         return;
+=======
+        
+        // Verify calculated duration matches selected duration
+        if (parseInt(numberOfDays) !== duration) {
+            showMessage(`Calculated duration (${duration} days) doesn't match selected duration (${numberOfDays} days)`, 'error');
+            return;
+        }
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     }
     
     // Create leave application object
     const leaveApplication = {
+<<<<<<< HEAD
         leaveType: leaveType.value,
+=======
+        leaveType: leaveType,
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         startDate: startDate,
         endDate: endDate,
         duration: duration,
         halfDayPeriod: halfDayPeriod,
+<<<<<<< HEAD
         reason: reason.value,
         appliedDate: new Date().toISOString().split('T')[0],
         status: 'pending'
@@ -551,10 +626,18 @@ function handleLeaveApplicationSubmit(event) {
     
     console.log('Submitting leave application:', leaveApplication);
     
+=======
+        reason: reason,
+        appliedDate: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     // Submit the application
     submitLeaveApplication(leaveApplication);
 }
 
+<<<<<<< HEAD
 
 // Add this helper to ensure currentUser data is available
 function getCurrentUserData() {
@@ -614,11 +697,20 @@ function submitLeaveApplication(applicationData) {
         
         let summaryText = `Leave Application Submitted Successfully!
         
+=======
+function submitLeaveApplication(applicationData) {
+    // Display submitted data
+    console.log('Submitting leave application:', applicationData);
+    
+    let summaryText = `Leave Application Submitted Successfully!
+    
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 Leave Type: ${applicationData.leaveType}
 Start Date: ${applicationData.startDate}
 End Date: ${applicationData.endDate}
 Duration: ${applicationData.duration} day(s)`;
 
+<<<<<<< HEAD
         if (applicationData.halfDayPeriod) {
             summaryText += `
 Half Day Period: ${applicationData.halfDayPeriod}`;
@@ -652,6 +744,30 @@ Status: Pending Approval`;
 }
 
 
+=======
+            if (applicationData.halfDayPeriod) {
+                summaryText += `
+Half Day Period: ${applicationData.halfDayPeriod}`;
+            }
+
+            summaryText += `
+Reason: ${applicationData.reason}
+Status: Pending Approval`;
+
+    showMessage(summaryText);
+    
+    // Reset form
+    document.getElementById('leaveApplicationForm').reset();
+    clearLeaveDateFields();
+    
+    // Hide all dynamic groups
+    const groups = ['singleDateGroup', 'halfDayPeriodGroup', 'startDateGroup', 'endDateGroup', 'customDurationGroup'];
+    groups.forEach(groupId => {
+        document.getElementById(groupId)?.classList.add('hidden');
+    });
+}
+
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // Tab switching functionality for leave management
 function switchLeaveTab(tabName) {
     // Hide all leave tabs

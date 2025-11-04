@@ -103,6 +103,7 @@ const allocationManager = new ProjectAllocationManager();
 
 function openAllocationForm() { allocationManager.openForm(); }
 function closeAllocationForm() { allocationManager.closeForm(); }
+<<<<<<< HEAD
 
 
 // ============================
@@ -167,3 +168,5 @@ function populateClientDropdown() {
   
   console.log(`✅ Dropdown populated with ${clientsData.length} options`);
 }
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27

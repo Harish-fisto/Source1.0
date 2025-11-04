@@ -215,6 +215,7 @@ function closeTaskAllocationForm() {
     console.error('Modal element not found');
   }
 }
+<<<<<<< HEAD
 
 
 // ============================
@@ -279,3 +280,5 @@ function populateClientDropdown() {
   
   console.log(`✅ Dropdown populated with ${clientsData.length} options`);
 }
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27

@@ -256,7 +256,11 @@ class DashboardSPA {
                 // canViewBudget: true,
                 canManageSpecialDays: false,
                 canAccessAnalysis: true,
+<<<<<<< HEAD
                 canManageProjects: false,
+=======
+                canManageProjects: true,
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
                 canViewMarketing: false,
                 // canManageClients: true,
                 // canRegisterEmployees: true,
@@ -465,8 +469,11 @@ class DashboardSPA {
     this.showContentSection('dashboard');
 }
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
     // FIXED: Validate user session with consistent key checking
     validateUserSession() {
         console.log('Validating user session...');
@@ -1244,6 +1251,7 @@ class DashboardSPA {
         
         console.log('Dashboard SPA destroyed');
     }
+<<<<<<< HEAD
     configureProjectPageButtons() {
   const permissions = this.currentUser.permissions;
 
@@ -1284,6 +1292,8 @@ class DashboardSPA {
   }
 }
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 }
 
 // Configuration object for easy customization
@@ -1468,7 +1478,10 @@ function switchTab(tabName) {
   }
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // function loadSidebarMenu() {
 //     const sidebarItems = [
 //         { name: 'Dashboard', id: 'dashboard', icon: 'icon-home' },
@@ -1561,8 +1574,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // 6. Debug helper to check active states:
 // checkActiveStates() {
 //     console.group('Active States Check');

@@ -72,6 +72,7 @@ function clearDailyReportFilter() {
     console.log('Daily report filter cleared');
 }
 
+<<<<<<< HEAD
 // Helper function to format date from yyyy-mm-dd to dd/mm/yyyy
 function formatDate(dateString) {
     if (!dateString) return '';
@@ -98,6 +99,8 @@ function getStatusClass(status) {
     return 'status-pending';
 }
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // Load Leave Reports from API
 async function loadLeaveReports() {
     try {
@@ -120,24 +123,39 @@ async function loadLeaveReports() {
         const tbody = document.querySelector("#leaveReportsTable tbody");
         tbody.innerHTML = ''; // Clear existing rows
         
+<<<<<<< HEAD
         if (result.data && result.data.length > 0) {
+=======
+        if (result.success && result.data && result.data.length > 0) {
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
             result.data.forEach((row) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${row.emp_id || ''}</td>
                     <td>${row.emp_name || ''}</td>
                     <td>${row.leave_type || ''}</td>
+<<<<<<< HEAD
                     <td>${formatDate(row.from_date)}</td>
                     <td>${formatDate(row.to_date)}</td>
                     <td>${row.number_of_days || ''}</td>
                     <td>${row.session || ''}</td>
                     <td>${row.reason || ''}</td>
+=======
+                    <td>${row.from_date || ''}</td>
+                    <td>${row.to_date || ''}</td>
+                    <td>${row.number_of_days || ''}</td>
+                    <td>${row.reason || ''}</td>
+                    <td>${row.created_at ? row.created_at.split(' ')[0] : ''}</td>
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
                     <td><span class="status-badge ${getStatusClass(row.status)}">${row.status || 'Pending'}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
+<<<<<<< HEAD
             
             console.log(`✅ Successfully loaded ${result.data.length} leave report(s)`);
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         } else {
             // Show empty state
             tbody.innerHTML = `
@@ -170,6 +188,7 @@ async function loadLeaveReports() {
     }
 }
 
+<<<<<<< HEAD
 // Call this function when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadLeaveReports();
@@ -202,6 +221,8 @@ function getStatusClass(status) {
     return 'status-pending';
 }
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // Load Permission Reports from API
 async function loadPermissionReports() {
     try {
@@ -224,25 +245,40 @@ async function loadPermissionReports() {
         const tbody = document.querySelector("#permissionReportsTable tbody");
         tbody.innerHTML = ''; // Clear existing rows
         
+<<<<<<< HEAD
         // FIX: Check for result.data directly (no result.success in API response)
         if (result.data && result.data.length > 0) {
+=======
+        if (result.success && result.data && result.data.length > 0) {
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
             result.data.forEach((row) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${row.emp_id || ''}</td>
                     <td>${row.employeeName || row.emp_name || ''}</td>
+<<<<<<< HEAD
                     <td>${formatDate(row.permission_date)}</td>
+=======
+                    <td>${row.permission_date || ''}</td>
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
                     <td>${row.from_time ? row.from_time.substring(0, 5) : ''}</td>
                     <td>${row.to_time ? row.to_time.substring(0, 5) : ''}</td>
                     <td>${row.delay_duration || ''}</td>
                     <td>${row.reason || ''}</td>
+<<<<<<< HEAD
                     <td>${row.created_at ? formatDate(row.created_at.split(' ')[0]) : ''}</td>
+=======
+                    <td>${row.created_at ? row.created_at.split(' ')[0] : ''}</td>
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
                     <td><span class="status-badge ${getStatusClass(row.status)}">${row.status || 'Pending'}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
+<<<<<<< HEAD
             
             console.log(`✅ Successfully loaded ${result.data.length} permission report(s)`);
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
         } else {
             // Show empty state
             tbody.innerHTML = `
@@ -275,6 +311,7 @@ async function loadPermissionReports() {
     }
 }
 
+<<<<<<< HEAD
 // Make sure to call this when page loads
 document.addEventListener('DOMContentLoaded', function() {
     loadLeaveReports();
@@ -282,6 +319,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+=======
+>>>>>>> 153db6cfc9b36ba0dd9cb5cdb1d1bf60e82a2e27
 // Helper function to get status CSS class
 function getStatusClass(status) {
     if (!status) return 'status-pending';
